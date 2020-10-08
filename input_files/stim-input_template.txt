@@ -1,0 +1,25 @@
+use_nidaq	0			
+total_epoch_num	4			
+randomization_condition	1			
+epoch_nums	1	2	3	4
+stim_type	gratings-v1	gratings-v1	gratings-v1	gratings-v1
+param1	4	3	3	3
+param2	sin	sin	sin	sin
+param3	2	3	3	3
+param4	1	1	1	1
+param5	0	1.5	3	6
+param6	90	0	180	270
+param7				
+param8				
+param9				
+param10				
+param11				
+param12				
+param13				
+param14				
+param15				
+param16				
+param17				
+param18				
+param19				
+param20				

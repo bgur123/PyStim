@@ -1,0 +1,31 @@
+1.5148 	WARNING 	We strongly recommend you activate the PTB sound engine in PsychoPy prefs as the preferred audio engine. Its timing is vastly superior. Your prefs are currently set to use ['sounddevice', 'PTB', 'pyo', 'pygame'] (in that order).
+22.1520 	WARNING 	User requested fullscreen with size [1024  768], but screen is actually [2048, 1152]. Using actual size
+23.6459 	EXP 	Created window1 = Window(allowGUI=False, allowStencil=False, args=UNKNOWN, autoLog=True, bitsMode=UNKNOWN, blendMode='avg', bpc=(8, 8, 8), color=array([0., 0., 0.]), colorSpace='rgb', depthBits=8, fullscr=<method-wrapper '__getattribute__' of attributeSetter object at 0x151b879e8>, gamma=None, gammaErrorPolicy='raise', kwargs=UNKNOWN, lms=UNKNOWN, monitor=<psychopy.monitors.calibTools.Monitor object at 0x1527e5780>, multiSample=False, name='window1', numSamples=2, pos=[512.0, 288.0], screen=0, size=array([4096, 2304]), stencilBits=0, stereo=False, units='height', useFBO=True, useRetina=True, viewOri=0.0, viewPos=None, viewScale=None, waitBlanking=True, winType='pyglet')
+23.6461 	EXP 	window1: mouseVisible = True
+23.6461 	EXP 	window1: recordFrameIntervals = False
+23.8063 	EXP 	window1: recordFrameIntervals = True
+23.9895 	EXP 	window1: recordFrameIntervals = False
+24.2678 	EXP 	Created noise = NoiseStim(__class__=<class 'psychopy.visual.noise.NoiseStim'>, autoDraw=False, autoLog=True, blendmode='avg', color=array([1., 1., 1.]), colorSpace='rgb', contrast=1.0, depth=0.0, interpolate=False, mask='none', maskParams=None, name='noise', opacity=1.0, ori=0.0, phase=array([0., 0.]), pos=array([0., 0.]), rgbPedestal=array([0., 0., 0.]), sf=array([1., 1.]), size=array([0.5, 0.5]), tex='sin', texRes=128, units='height', win=Window(...))
+24.3852 	EXP 	Created grating = GratingStim(__class__=<class 'psychopy.visual.grating.GratingStim'>, autoDraw=False, autoLog=True, blendmode='avg', color=array([1., 1., 1.]), colorSpace='rgb', contrast=1.0, depth=-1.0, interpolate=True, mask=None, maskParams=None, name='grating', opacity=1.0, ori=0.0, phase=array([0., 0.]), pos=array([0., 0.]), rgbPedestal=array([0., 0., 0.]), sf=array([1., 1.]), size=array([0.5, 0.5]), tex='sin', texRes=512, units='height', win=Window(...))
+24.4414 	EXP 	noise: blendmode = 'avg'
+24.4414 	EXP 	noise: mask = None
+24.4414 	EXP 	noise: texRes = 1024
+24.4414 	EXP 	noise: noiseType = 'Binary'
+24.4414 	EXP 	noise: noiseImage = None
+24.4414 	EXP 	noise: noiseElementSize = 0.0625
+24.4414 	EXP 	noise: noiseBaseSf = 8.0
+24.4414 	EXP 	noise: noiseBW = 1.0
+24.4414 	EXP 	noise: noiseBWO = 30.0
+24.4414 	EXP 	noise: noiseFractalPower = 0.0
+24.4414 	EXP 	noise: noiseFilterUpper = 8.0
+24.4414 	EXP 	noise: noiseFilterLower = 1.0
+24.4414 	EXP 	noise: noiseFilterOrder = 0.0
+24.4414 	EXP 	noise: noiseClip = 3.0
+24.4414 	EXP 	noise: filter = None
+24.4414 	EXP 	noise: tex = <class 'numpy.ndarray'>
+24.4414 	EXP 	noise: tex = <class 'numpy.ndarray'>
+24.4414 	EXP 	noise: autoDraw = True
+24.4414 	EXP 	grating: autoDraw = True
+25.4068 	EXP 	noise: autoDraw = False
+25.4068 	EXP 	grating: autoDraw = False
+25.7193 	EXP 	window1: mouseVisible = True
