@@ -1,7 +1,8 @@
 stim_type	gratings-v1	
-param1	duration_seconds	float
+param1	total_dur_sec	float
 param2	type	str
 param3	spatial_wavelength	float
-param4	michelson_contrast	float
-param5	velocity	float
-param6	direction_deg	float
+param4	velocity	float
+param5	direction_deg	float
+param6	michelson_contrast	float
+param7	mean_luminance	float

@@ -35,6 +35,9 @@ class PyStimRoutine(object):
     def processStimInput(self, stim_input_raw):
         """
         """
+        self.use_nidaq = \
+            int(stim_input_raw['use_nidaq'][0])
+            
         self.randomization_condition = \
             int(stim_input_raw['randomization_condition'][0])
 
@@ -44,6 +47,7 @@ class PyStimRoutine(object):
         self.epoch_nums = \
             list(map(int, stim_input_raw['epoch_nums']))
 
+        
         # Total epoch number should match with given epochs since 
         # there might be a reading mistake 
         if self.total_epoch_n != len(self.epoch_nums):
