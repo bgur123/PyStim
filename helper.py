@@ -35,9 +35,7 @@ class PyStimRoutine(object):
     def processStimInput(self, stim_input_raw):
         """
         """
-        self.use_nidaq = \
-            int(stim_input_raw['use_nidaq'][0])
-            
+    
         self.randomization_condition = \
             int(stim_input_raw['randomization_condition'][0])
 
@@ -154,4 +152,47 @@ class PyStimEpoch(PyStimRoutine):
                     raise ValueError(errormsg)
         return processed_parameters
 
+class OutputInfo(object):
+    """ 
+        For constructing an output organization
+    """
+    def __init__(self,meta=None):
 
+        # We need to parse the .txt file to understand the stimulus routine structure.
+        self.meta = meta
+        self.sample_num = []
+        self.stim_frame = []
+        self.imaging_frame = []
+        self.stimulus_epoch = []
+        self.time_passed = []
+        self.stim_info1 = []
+        self.stim_info2 = []
+        self.stim_info3 = []
+    
+    def saveOutput(self,save_loc):
+        save_str = f"""stimulus_output_NIDAQ-{self.__dict__['meta']['nidaq']}"""\
+                    f"""_DATETIME-{self.__dict__['meta']['date_time']}.txt"""
+            
+        file_h = open(os.path.join(save_loc,save_str),'w')
+
+        row_n = len(self.__dict__['sample_num'])
+        # Write the column names
+        for key in self.__dict__.keys():
+            if not(key == "meta"):
+                file_h.write(key)
+                file_h.write('\t')
+        file_h.write('\n')
+
+        for row_num in range(row_n):
+            for key in self.__dict__.keys():
+                if not(key == "meta"):
+                    file_h.write(str(self.__dict__[key][row_num]))
+                    file_h.write('\t')
+            file_h.write('\n')
+
+        file_h.close()
+        print(f'Output file saved:\n{os.path.join(save_loc,save_str)}')
+
+
+
+    
