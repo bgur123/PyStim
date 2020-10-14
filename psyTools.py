@@ -34,8 +34,7 @@ def initialize_stimulus(epochObj,win,proj_params):
     if epochObj.stim_type == 'gratings-v1':
         # Moving gratings
         dimension = 1024 # It needs to be square power-of-two (e.g. 256 x 256) for PsychoPy
-        unit = proj_params['unit']
-        size = proj_params['size']
+
         # Calculation of BG and FG depending on the michelson contrast definition
         # fg-bg = c * 2 * l
         # fg+bg = 2 * l                    
@@ -64,7 +63,7 @@ def initialize_stimulus(epochObj,win,proj_params):
         orientation = np.mod(epochObj.direction_deg-90,360) # direction & orientation orthogonal
         grating = visual.GratingStim(
             win=win, name='grating',tex=grating_texture, 
-            size=(size, size), ori = orientation,
+            size=(proj_params['size'], proj_params['size']), ori = orientation,
             sf=1/epochObj.spatial_wavelength,
             units=proj_params['unit'])
         
@@ -74,6 +73,25 @@ def initialize_stimulus(epochObj,win,proj_params):
 
     
     return epochObj
+def initialize_stimulus_v2(epochObj,win,proj_params):
+
+    """ For creating the PsychoPy stimulus objects"""
+    if epochObj.stim_type == 'gratings-v1':
+        orientation = np.mod(epochObj.direction_deg-90,360) # direction & orientation orthogonal
+        grating = visual.GratingStim(
+            win=win, name='grating',tex=epochObj.grating_texture, 
+            size=(proj_params['size'], proj_params['size']), ori = orientation,
+            sf=1/epochObj.spatial_wavelength,
+            units=proj_params['unit'])
+        
+        grating.autoDraw = True  # Automatically draw every frame
+        grating.autoLog = False 
+        epochObj.grating = grating
+    else:
+        raise ValueError("Grating type {s} doesn't exist".format(\
+                    s=self.type))
+    return epochObj
+    
 
 
 def update_stimulus(epochObj,screen_refresh_rate,win,epoch_clock,outputObj):

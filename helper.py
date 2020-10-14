@@ -116,7 +116,7 @@ class PyStimEpoch(PyStimRoutine):
         self.stim_type = stim_type
         self.epoch_info = self.readStimInput(stim_info_fname)
         self.processed_params = self.processEpochInfo(self.epoch_info,params)
-        self.a=1
+        self.initializeStimulus()
 
     def processEpochInfo(self,epoch_info, params):
         """ Processes the epoch parameters"""
@@ -151,6 +151,42 @@ class PyStimEpoch(PyStimRoutine):
                     errormsg = '{s} {p} type not defined correctly.'.format(s=self.stim_type,p=info_param)
                     raise ValueError(errormsg)
         return processed_parameters
+    
+    def initializeStimulus():
+        """ Initializing the stimulus depending on the type.
+        """
+        if self.stim_type == 'gratings-v1':
+            # Moving gratings
+            dimension = 1024 # It needs to be square power-of-two (e.g. 256 x 256) for PsychoPy
+            
+            
+            # Calculation of BG and FG depending on the michelson contrast definition
+            # fg-bg = c * 2 * l
+            # fg+bg = 2 * l                    
+            contrast = self.michelson_contrast
+            luminance = self.mean_luminance
+            fg = contrast * 2 * luminance
+            bg = 2*luminance - fg
+            f = 1# generate a single cycle
+
+            # Generate 1D wave and modulate the luminance and contrast
+            if self.type == "sin":
+                
+                x = np.arange(dimension)
+                # Wave needs to be scaled to 0-1 so we can modulate it easier later
+                sine_signal = (np.sin(2 * np.pi * f * x / dimension)/2 +0.5)
+                # We need to scale and shift the wave to match the fg bg values
+                oneD_wave = sine_signal * 2*(fg - bg) # Scaling the signal
+                oneD_wave = oneD_wave -1 + bg 
+            
+            else:
+                raise NameError("Grating type {s} doesn't exist".format(\
+                    s=self.type))
+            grating_texture = np.tile(oneD_wave, [dimension,1])
+            self.grating_texture = grating_texture
+        else:
+            raise NameError(f"Stimulus type {self.stim_type} could not be initialized.")
+
 
 class OutputInfo(object):
     """ 
