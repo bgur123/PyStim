@@ -180,7 +180,7 @@ class PyStimEpoch(PyStimRoutine):
                 oneD_wave = oneD_wave -1 + bg 
             
             else:
-                raise NameError("Grating type {s} doesn't exist".format(\
+                raise ValueError("Grating type {s} doesn't exist".format(\
                     s=self.type))
             grating_texture = np.tile(oneD_wave, [dimension,1])
             self.grating_texture = grating_texture
@@ -197,10 +197,11 @@ class OutputInfo(object):
         # We need to parse the .txt file to understand the stimulus routine structure.
         self.meta = meta
         self.sample_num = []
-        self.stim_frame = []
+        self.time_passed = []
+        self.epoch_time = []
         self.imaging_frame = []
         self.stimulus_epoch = []
-        self.time_passed = []
+        self.stim_frame = []
         self.stim_info1 = []
         self.stim_info2 = []
         self.stim_info3 = []

@@ -35,10 +35,8 @@ def check_status_daq(daq_counter_h,daq_data,global_clock):
 
     # check for DAQ Data
     daq.DAQmxReadCounterScalarU32(daq_counter_h,1.0,daq.byref(daq_data), None) 
-    last_data_frame = daq_data.value
-    last_data_frameT = global_clock.getTime()
     
-    return (daq_data, last_data_frame, last_data_frameT)
+    return (daq_data, daq_data.value, global_clock.getTime())
 
 def clearTask(taskHandle):
     """

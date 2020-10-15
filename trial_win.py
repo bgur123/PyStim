@@ -88,18 +88,21 @@ while not (len(event.getKeys(['escape'])) \
         # Duration is needed to stop the epoch
         epoch_duration = currentEpoch.total_dur_sec
         
-        # Create the stimulus with given properties
-        currentEpoch = pt.initialize_stimulus(currentEpoch,win,
-            proj_params)
-        stim_frame = 0
-        epoch_start = False
-
+        # Send trigger
         if stim_start == True:
             sample_num = 0
             if meta["nidaq"]:
                 # Send pulse to the imaging computer and start the counter
                 daq_pulse_h, daq_counter_h, daq_data = daqT.configure_daq()
             stim_start = False
+
+        # Create the stimulus with given properties
+        currentEpoch = pt.initialize_stimulus(currentEpoch,win,
+            proj_params)
+        stim_frame = 0
+        epoch_start = False
+
+        
 
     elif epoch_clock.getTime() > epoch_duration:
         epoch_start = True
