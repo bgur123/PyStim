@@ -4,17 +4,16 @@ import numpy as np # working with arrays and numbers
 import time
 from psychopy import visual,core, gui, monitors,event, logging
 from datetime import datetime
-import PyDAQmx as daq
+# import PyDAQmx as daq
 
 # Self written packages
-from helper import *
+from helper_v2 import *
 import psyTools as pt
-import nidaqTools as daqT
+# import nidaqTools as daqT
 
 
 #%% Initialize 
 # Parameters of projection for stimulus creation
-use_nidaq = 1 
 (proj_params, use_nidaq) = pt.setup_params()
 
 # An output structure for aligning with acquired imaging frames and storing stimulus
@@ -45,8 +44,8 @@ mon.setWidth = proj_params["monitorWidthcm"]
 mon.setDistance = proj_params["observerDistancecm"]
 
 win = visual.Window(
-    size=(proj_params['win_width_pix'] ,
-    proj_params['win_height_pix']), useFBO = True,allowGUI=False, 
+    size=(proj_params['win_width_pix'] , proj_params['win_height_pix']), 
+    useFBO = True,allowGUI=False, color=[-1, -1, -1],
     viewOri = 0.0, fullscr=False, monitor=mon, units='degFlat')
 
 #Detecting dropped frames if any
@@ -54,90 +53,93 @@ win.setRecordFrameIntervals(True)
 win._refreshTreshold = 1/proj_params["monitorRefreshRate"]+0.004 # warn if frame is late more than 4 ms
 logging.console.setLevel(logging.WARNING)
 # %% Main loop for presenting the stimulus
-epoch_start = True
 stim_start = True
 stop = False # For nidaq stop condition
 last_data_frame = -1
 data_frame = 0
-lastT = 0
+prev_time = 0
 # Generate a sequence of 1000 trials to have a sequence for all presentation which is faster.
+# Initialize stimuli
 trial_epoch_sequence = routine.generateTrialSeries(1000)
+routine.initializeEpochs(win,proj_params)
+
 current_epoch_idx = -1
 
 # We can keep both global and epoch time
 print("Stimulus started...")
+
 routine_clock = core.Clock()
-routine_max_time = 10000 * 60 # in seconds - to stop the loop if there is no other stop condition
+routine_max_time = 0.2 * 60 # in seconds - to stop the loop if there is no other stop condition
 epoch_clock = core.Clock()
 
 
 while not (len(event.getKeys(['escape'])) \
     or routine_max_time < routine_clock.getTime()) and not(stop):
+
+    # We need to start a timer and send the pulse if NIDAQ is used at the beginning of the stimulus presentation
     if stim_start:
-            sample_num = 0
-            if meta["nidaq"]:
-                # Send pulse to the imaging computer and start the counter
-                daq_pulse_h, daq_counter_h, daq_data = daqT.configure_daq()
-            stim_start = False
-            tic = time.time()
-
-    if epoch_start:
-        # We need to restart the clock 
-        epoch_clock.reset()
-
-        # Set the current epoch
-        current_epoch_idx += 1
-        current_epoch_num = trial_epoch_sequence[current_epoch_idx]
-        currentEpoch = routine.epochs[current_epoch_num]
-        currentEpoch.startSignal = True
-        # Duration is needed to stop the epoch
-        epoch_duration = currentEpoch.total_dur_sec
-    
-        # Create the stimulus with given properties
-        stim_frame = 0
-        epoch_start = False
-
-    while (epoch_clock.getTime() < currentEpoch.total_dur_sec):
-        toc1 = time.time()
-        # Update stimulus
-        pt.run_stimulus(currentEpoch,proj_params,proj_params["monitorRefreshRate"],
-            win,epoch_clock, outputObj)
-        toc3 = time.time()
-
-        # Add a stop condition of nidaq doesn't receive signal for 2 seconds
+        sample_num = 0
+        routine_clock.reset()
         if meta["nidaq"]:
-            # Check microscope frame status
+            # Send pulse to the imaging computer and start the counter
+            daq_pulse_h, daq_counter_h, daq_data = daqT.configure_daq()
+        stim_start = False
+    
+    # Epoch timer should be restarted at the beginning of each epoch
+    epoch_clock.reset()
+
+    # Set the current epoch
+    current_epoch_idx += 1
+    current_epoch_num = trial_epoch_sequence[current_epoch_idx]
+    currentEpoch = routine.epochs[current_epoch_num]
+    currentEpoch.startSignal = True
+    # Duration is needed to stop the epoch
+    epoch_duration = currentEpoch.total_dur_sec
+    stim_frame = 0
+    epoch_start = False
+
+    # Epochs will be run in this loop
+    while (epoch_clock.getTime() < currentEpoch.total_dur_sec):
+
+        # Update stimulus
+        pt.run_stimulus_v2(currentEpoch,proj_params["monitorRefreshRate"],win,outputObj)
+
+        # We need to get the current imaging frame number 
+        # Also have a stop condition 
+        if meta["nidaq"]:
+            
             (daq_data, data_frame, data_frameT) = \
-                daqT.check_status_daq(daq_counter_h,daq_data,routine_clock)
-            diff = data_frameT - lastT
-            lastT = data_frameT
+                daqT.check_status_daq(daq_counter_h,daq_data,routine_clock)            
             if last_data_frame != data_frame:
                 last_data_frameT = data_frameT
                 last_data_frame = data_frame
-            elif data_frameT - last_data_frameT > 1.0:
+            elif data_frameT - last_data_frameT > 1.0: # if 1 second has passed since last frame
                 stop = True
                 break
-            
+            outputObj.frame_time.append(f'{data_frameT:.3f}')
+        
+
+        currT = routine_clock.getTime()
+        time_diff = currT- prev_time 
+        
+        # Fill the output structure
         sample_num +=1
         stim_frame +=1
-        outputObj.sampling_interval.append(f'{diff:.3f}')
+        outputObj.sampling_interval.append(f'{time_diff:.3f}')
         outputObj.sample_num.append(sample_num)
         outputObj.stim_frame.append(stim_frame)
         outputObj.epoch_time.append(f'{epoch_clock.getTime():.3f}')
         outputObj.imaging_frame.append(data_frame)
         outputObj.stimulus_epoch.append(current_epoch_num)
-        outputObj.time_passed.append(f'{data_frameT:.3f}')
+        
+        prev_time = currT
 
-    epoch_start = True
-
-            
 if meta["nidaq"]:
     daqT.clearTask(daq_counter_h)
     daqT.clearTask(daq_pulse_h)
 
-save_loc = 'C:\PyStim_outputs'
+save_loc = os.path.join(os.getcwd(),"PyStim_outputs")
 if not(os.path.exists(save_loc)):
     os.mkdir(save_loc)
 outputObj.saveOutput(save_loc)
 print(f"Stimulus finished...")
-# print(tictocs)

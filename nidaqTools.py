@@ -27,6 +27,7 @@ def configure_daq():
     daq_data = daq.uInt32(0)
     daq.DAQmxReadCounterScalarU32(counterTaskHandle,
         1.0,daq.byref(daq_data), None)
+    
     return pulseTaskHandle, counterTaskHandle, daq_data
     
 

@@ -21,12 +21,12 @@ def setup_params():
     user_entry = options_panel.show()  
 
     mon = monitors.Monitor(user_entry[0])
-    
+
     proj_params={
         "unit" : 'degFlat',
-        "size" : float(user_entry[6]),
-        "win_width_pix" : float(user_entry[4]),
-        "win_height_pix" : float(user_entry[5]),
+        "size" : float(user_entry[5]),
+        "win_width_pix" : float(user_entry[3]),
+        "win_height_pix" : float(user_entry[4]),
         "monitorName" : mon.name,
         "monitorSizePix" : mon.getSizePix(),
         "monitorWidthcm" : mon.getWidth(),
@@ -94,7 +94,6 @@ def initialize_stimulus_v2(epochObj,win,proj_params):
             sf=1/epochObj.spatial_wavelength,
             units=proj_params['unit'])
         
-        grating.autoDraw = True  # Automatically draw every frame
         grating.autoLog = False 
         epochObj.grating = grating
     else:
@@ -130,6 +129,7 @@ def run_stimulus(epochObj,proj_params,screen_refresh_rate,win,epoch_clock,
 
     
     if epochObj.stim_type == 'gratings-v1':
+        tic = time.time()
         # Moving gratings
         if epochObj.startSignal:
             orientation = np.mod(epochObj.direction_deg-90,360) # direction & orientation orthogonal
@@ -139,11 +139,35 @@ def run_stimulus(epochObj,proj_params,screen_refresh_rate,win,epoch_clock,
                 sf=1/epochObj.spatial_wavelength,
                 units=proj_params['unit'])
             grating.autoLog = False 
+            tocc=time.time()
             epochObj.grating = grating
             epochObj.startSignal = False
-        
+        toc1 = time.time()
         
         # For moving the grating we will need to advance the phase
+        # according to the desired velocity and screen refresh rate
+        #| v (degree/s) / refresh rate (update/s) |
+        # Since phase advances are related to 1 cycle we should also
+        # use spatial wavelength of the grating.
+        epochObj.grating.phase += \
+            (epochObj.velocity/screen_refresh_rate)/epochObj.spatial_wavelength
+        epochObj.grating.draw()
+        win.flip()
+        toc2 = time.time()
+        outputObj.stim_info1.append(epochObj.grating.phase)
+        outputObj.stim_info2.append(0)
+        outputObj.stim_info3.append(0)
+
+
+def run_stimulus_v2(epochObj,screen_refresh_rate,win,outputObj):
+    """ For drawing and updating the PsychoPy stimulus objects"""
+
+    
+    if epochObj.stim_type == 'gratings-v1':
+       
+        # Moving gratings
+
+        # We will need to advance the phase
         # according to the desired velocity and screen refresh rate
         #| v (degree/s) / refresh rate (update/s) |
         # Since phase advances are related to 1 cycle we should also
@@ -156,7 +180,6 @@ def run_stimulus(epochObj,proj_params,screen_refresh_rate,win,epoch_clock,
         outputObj.stim_info1.append(epochObj.grating.phase)
         outputObj.stim_info2.append(0)
         outputObj.stim_info3.append(0)
-
 
             
             

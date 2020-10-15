@@ -7,6 +7,8 @@
 import numpy as np
 import re
 import os
+from psychopy import visual
+
 
 class PyStimRoutine(object):
     """ 
@@ -104,6 +106,13 @@ class PyStimRoutine(object):
                 self.generateEpochSeries()
         return trial_series
 
+    def initializeEpochs(self,win,proj_params):
+        """ Initializes Epochs that are within this routine """
+        for epochId in self.epochs:
+            self.epochs[epochId].initializeStimulus(win,proj_params)
+        print("Initialized all epochs...")
+
+
         
 
 class PyStimEpoch(PyStimRoutine):
@@ -116,7 +125,6 @@ class PyStimEpoch(PyStimRoutine):
         self.stim_type = stim_type
         self.epoch_info = self.readStimInput(stim_info_fname)
         self.processed_params = self.processEpochInfo(self.epoch_info,params)
-        self.initializeStimulus()
 
     def processEpochInfo(self,epoch_info, params):
         """ Processes the epoch parameters"""
@@ -152,13 +160,12 @@ class PyStimEpoch(PyStimRoutine):
                     raise ValueError(errormsg)
         return processed_parameters
     
-    def initializeStimulus(self):
+    def initializeStimulus(self,win,proj_params):
         """ Initializing the stimulus depending on the type.
         """
         if self.stim_type == 'gratings-v1':
             # Moving gratings
             dimension = 1024 # It needs to be square power-of-two (e.g. 256 x 256) for PsychoPy
-            
             
             # Calculation of BG and FG depending on the michelson contrast definition
             # fg-bg = c * 2 * l
@@ -183,7 +190,15 @@ class PyStimEpoch(PyStimRoutine):
                 raise ValueError("Grating type {s} doesn't exist".format(\
                     s=self.type))
             grating_texture = np.tile(oneD_wave, [dimension,1])
-            self.grating_texture = grating_texture
+            orientation = np.mod(self.direction_deg-90,360) # direction & orientation orthogonal
+            grating = visual.GratingStim(
+                win=win, name='grating',tex=grating_texture, 
+                size=(proj_params['size'], proj_params['size']), ori = orientation,
+                sf=1/self.spatial_wavelength,
+                units=proj_params['unit'])
+        
+            grating.autoLog = False 
+            self.grating = grating
         else:
             raise NameError(f"Stimulus type {self.stim_type} could not be initialized.")
 
@@ -197,12 +212,12 @@ class OutputInfo(object):
         # We need to parse the .txt file to understand the stimulus routine structure.
         self.meta = meta
         self.sample_num = []
-        self.time_passed = []
         self.sampling_interval = []
-        self.epoch_time = []
         self.imaging_frame = []
+        self.frame_time = []
         self.stimulus_epoch = []
         self.stim_frame = []
+        self.epoch_time = []
         self.stim_info1 = []
         self.stim_info2 = []
         self.stim_info3 = []
@@ -223,7 +238,7 @@ class OutputInfo(object):
 
         for row_num in range(row_n):
             for key in self.__dict__.keys():
-                if not(key == "meta"):
+                if not(key == "meta") and not(len(self.__dict__[key]) ==0):
                     file_h.write(str(self.__dict__[key][row_num]))
                     file_h.write('\t')
             file_h.write('\n')
