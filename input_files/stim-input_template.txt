@@ -4,8 +4,8 @@ epoch_nums	1	2	3	4	5	6
 stim_type	gratings-v1	gratings-v1	gratings-v1	gratings-v1	gratings-v1	gratings-v1
 param1	4	4	4	4	4	4
 param2	sin	sin	sin	sin	sin	sin
-param3	1	1	1	1	1	1
-param4	0	2	2	2	2	2
+param3	15	15	15	15	15	15
+param4	0	15	15	15	15	15
 param5	90	90	90	90	90	90
 param6	1	1	1	1	1	1
 param7	0.2625	0.5	0.375	0.25	0.125	0.0625

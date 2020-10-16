@@ -11,29 +11,39 @@ from helper import *
 def setup_params():
     options_panel = gui.Dlg(title="PyStim options")
     options_panel.addText('Enter desired run options')
-    options_panel.addField('Monitor:', choices=monitors.getAllMonitors())
+    options_panel.addText("Below are current options for DLP")
+    options_panel.addField('Monitor settings:', choices=monitors.getAllMonitors())
+    options_panel.addField('use DLP:',initial=True)
     options_panel.addField('use NIDAQ:',initial=True)
-    options_panel.addField('Refresh rate:',100)
+    options_panel.addField('Refresh rate:',60)
     options_panel.addText("Refresh rate has to match with the monitor's")
-    options_panel.addField('Stim win width pix:',500)
-    options_panel.addField('Stim win height pix:',500)
-    options_panel.addField('Stim size deg:',20)
+    options_panel.addField('Stim win width pix:',1010)
+    options_panel.addField('Stim win height pix:',490)
+    options_panel.addField('Stim size X:',84)
+    options_panel.addField('Stim size Y:',60)
+    options_panel.addField('Stim pos X:',120)
+    options_panel.addField('Stim pos Y:',155)
+    options_panel.addField('Stim units:',choices=["degFlatPos","degFlat","deg"])
     user_entry = options_panel.show()  
 
     mon = monitors.Monitor(user_entry[0])
 
     proj_params={
         "unit" : 'degFlat',
-        "size" : float(user_entry[5]),
-        "win_width_pix" : float(user_entry[3]),
-        "win_height_pix" : float(user_entry[4]),
+        "sizeX" : float(user_entry[6]),
+        "sizeY" : float(user_entry[7]),
+        "posX" : float(user_entry[8]),
+        "posY" : float(user_entry[9]),
+        "win_width_pix" : float(user_entry[4]),
+        "win_height_pix" : float(user_entry[5]),
+        "onDLP" : int(user_entry[1]), # 1 is for DLP 0 is for PC monitors
         "monitorName" : mon.name,
         "monitorSizePix" : mon.getSizePix(),
         "monitorWidthcm" : mon.getWidth(),
         "observerDistancecm" : mon.getDistance() ,
-        "monitorRefreshRate" : float(user_entry[2])
+        "monitorRefreshRate" : float(user_entry[3])
     }
-    return proj_params, user_entry[1]
+    return proj_params, user_entry[2]
 
 def initialize_stimulus(epochObj,win,proj_params,outputObj):
     """ For creating the PsychoPy stimulus objects"""
