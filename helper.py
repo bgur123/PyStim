@@ -7,7 +7,10 @@
 import numpy as np
 import re
 import os
+import pickle
+import scipy.io as sio # To save .mat files
 from psychopy import visual
+
 
 
 class PyStimRoutine(object):
@@ -16,8 +19,11 @@ class PyStimRoutine(object):
     """
     def __init__(self,stim_fname):
 
-        # We need to parse the .txt file to understand the stimulus routine structure.
+        
         self.stim_fname = stim_fname
+        # Find the name of the stimulus routine
+        self.stim_name = os.path.basename(self.stim_fname).split('.')[0]
+        # We need to parse the .txt file to understand the stimulus routine structure.
         self.stim_input_raw = self.readStimInput(self.stim_fname)
         self.processStimInput(self.stim_input_raw)
         
@@ -163,6 +169,9 @@ class PyStimEpoch(PyStimRoutine):
     def initializeStimulus(self,win,proj_params):
         """ Initializing the stimulus depending on the type.
         """
+        # Values must be scaled for matching bit depths which is by default
+        # 8 bits in psychopy functions
+        bit_depth_scaler = (2**proj_params["bit_depth"]-1)/float(2**8-1) 
         if self.stim_type == 'gratings-v1':
             # Moving gratings
             dimension = 1024 # It needs to be square power-of-two (e.g. 256 x 256) for PsychoPy
@@ -184,9 +193,8 @@ class PyStimEpoch(PyStimRoutine):
                 sine_signal = (np.sin(2 * np.pi * f * x / dimension)/2 +0.5)
                 # We need to scale and shift the wave to match the fg bg values
                 # We also need to scale for bit depth since DLP has 6 bits
-                oneD_wave = sine_signal * 2*(fg - bg) * 63.0/255.0 # Scaling the signal* 63.0/255.0#
+                oneD_wave = sine_signal * 2*(fg - bg) * bit_depth_scaler  # Scaling the signal
                 oneD_wave = oneD_wave -1 + bg 
-            
             else:
                 raise ValueError("Grating type {s} doesn't exist".format(\
                     s=self.type))
@@ -201,6 +209,35 @@ class PyStimEpoch(PyStimRoutine):
         
             grating.autoLog = False 
             self.grating = grating
+        elif self.stim_type == 'edges-v1':
+            # Moving edges
+
+            # Pre edge window luminance (a.k.a. background)
+            # Scaling so it fits to -1 1 range
+            # Scaling so it is presented accurately with desired bit depth
+            self.win_lum = ((self.pre_lum*2)-1) * bit_depth_scaler 
+
+            # Edge luminance
+            edge_luminance = ((self.edge_lum*2)-1) * bit_depth_scaler  
+            
+            # Direction of movement
+            orientation = np.mod(self.direction_deg-90,360)
+
+            # The edge should fill the screen - the maximum possible size
+            span = np.sqrt(proj_params['sizeY']**2+proj_params['sizeX']**2)
+
+            rectangle = visual.Rect(
+                        win=win, name='rectangle', units=proj_params['unit'],
+                        width=0, height=span, pos = (-42, 0.5),
+                        ori=orientation,lineWidth=0, 
+                        fillColor=edge_luminance, fillColorSpace='rgb')
+            rectangle.autoLog = False
+            self.rectangle = rectangle
+
+        elif self.stim_type == 'fff-v1':
+            # Full field flashes
+            self.win_lum = ((self.lum*2)-1) * bit_depth_scaler 
+
         else:
             raise NameError(f"Stimulus type {self.stim_type} could not be initialized.")
 
@@ -214,6 +251,7 @@ class OutputInfo(object):
         # We need to parse the .txt file to understand the stimulus routine structure.
         self.meta = meta
         self.sample_num = []
+        self.sample_time = []
         self.sampling_interval = []
         self.imaging_frame = []
         self.frame_time = []
@@ -225,10 +263,13 @@ class OutputInfo(object):
         self.stim_info3 = []
     
     def saveOutput(self,save_loc):
-        save_str = f"""stimulus_output_NIDAQ-{self.__dict__['meta']['nidaq']}"""\
-                    f"""_DATETIME-{self.__dict__['meta']['date_time']}.txt"""
-            
-        file_h = open(os.path.join(save_loc,save_str),'w')
+        """ Saves the stimulus output structure in .txt and .pickle formats"""
+        save_str = f"""stimulus_output_NAME-{self.__dict__['meta']['stim_name']}"""\
+                    f"""_NIDAQ-{self.__dict__['meta']['nidaq']}"""\
+                    f"""_DATETIME-{self.__dict__['meta']['date_time']}"""
+        save_strTxt = f"{save_str}.txt"
+
+        file_h = open(os.path.join(save_loc,save_strTxt),'w')
 
         row_n = len(self.__dict__['sample_num'])
         # Write the column names
@@ -246,7 +287,18 @@ class OutputInfo(object):
             file_h.write('\n')
 
         file_h.close()
-        print(f'Output file saved:\n{os.path.join(save_loc,save_str)}')
+
+        # Saving as a .pickle file for easier Python processing
+        savePath = os.path.join(save_loc, f"{save_str}.pickle")
+        saveVar = open(savePath, "wb")
+        saveDict = {'outputObj' : self}
+        pickle.dump(saveDict, saveVar, protocol=-1)
+        saveVar.close()
+
+        # Saving as a .mat file
+        sio.savemat(os.path.join(save_loc, f"{save_str}.mat"), saveDict)
+        
+        print(f'Output .txt, .mat and .pickle files saved:\n{os.path.join(save_loc,save_str)}')
 
 
 

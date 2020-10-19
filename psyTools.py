@@ -24,12 +24,15 @@ def setup_params():
     options_panel.addField('Stim pos X:',120)
     options_panel.addField('Stim pos Y:',155)
     options_panel.addField('Stim units:',choices=["degFlatPos","degFlat","deg"])
+    options_panel.addField('Bit depth:',6)
+
     user_entry = options_panel.show()  
 
     mon = monitors.Monitor(user_entry[0])
 
     proj_params={
-        "unit" : 'degFlat',
+        "unit" : user_entry[10],
+        "bit_depth" : float(user_entry[11]),
         "sizeX" : float(user_entry[6]),
         "sizeY" : float(user_entry[7]),
         "posX" : float(user_entry[8]),
@@ -169,7 +172,7 @@ def run_stimulus(epochObj,proj_params,screen_refresh_rate,win,epoch_clock,
         outputObj.stim_info3.append(0)
 
 
-def run_stimulus_v2(epochObj,screen_refresh_rate,win,outputObj):
+def run_stimulus_v2(epochObj,cur_time,screen_refresh_rate,win,outputObj):
     """ For drawing and updating the PsychoPy stimulus objects"""
 
     
@@ -190,6 +193,41 @@ def run_stimulus_v2(epochObj,screen_refresh_rate,win,outputObj):
         outputObj.stim_info1.append(epochObj.grating.phase)
         outputObj.stim_info2.append(0)
         outputObj.stim_info3.append(0)
+    elif epochObj.stim_type == 'edges-v1':
+        # Moving edges
+        
+        # Change the window color to background luminance
+        win.color= epochObj.win_lum
+
+        # Reset rectangle if epoch is starting new
+        if epochObj.startSignal:
+            epochObj.rectangle.width = 0 
+            epochObj.startSignal = False
+
+        if cur_time > epochObj.pre_dur_sec:
+            # Moved by increasing the width (2x)
+            epochObj.rectangle.width += \
+                2 * (epochObj.velocity/screen_refresh_rate)
+        epochObj.rectangle.draw()
+        win.flip()
+
+        outputObj.stim_info1.append(epochObj.rectangle.width)
+        outputObj.stim_info2.append(0)
+        outputObj.stim_info3.append(0)
+    elif epochObj.stim_type == 'fff-v1':
+        # Full field flashes
+
+        # Change the window color to desired luminance
+        win.color= epochObj.win_lum
+        win.flip()
+
+        outputObj.stim_info1.append(0)
+        outputObj.stim_info2.append(0)
+        outputObj.stim_info3.append(0)
+        
+    else:
+            raise NameError(f"Stimulus type {epochObj.stim_type} could not be initialized.")
+
 
             
             

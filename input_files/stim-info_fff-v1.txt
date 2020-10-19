@@ -1,0 +1,3 @@
+stim_type	fff-v1	
+param1	total_dur_sec	float
+param2	lum	float

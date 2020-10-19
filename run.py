@@ -4,7 +4,7 @@ import numpy as np # working with arrays and numbers
 import time
 from psychopy import visual,core, gui, monitors,event, logging
 from datetime import datetime
-import PyDAQmx as daq
+import PyDAQmx as daq 
 
 # Self written packages
 from helper import *
@@ -14,17 +14,6 @@ import nidaqTools as daqT
 #%% Initialize 
 # Parameters of projection for stimulus creation
 (proj_params, use_nidaq) = pt.setup_params()
-
-# An output structure for aligning with acquired imaging frames and storing stimulus
-# meta data
-now = datetime.now()
-dt_string = now.strftime("%Y%m%d_%H%M%S")
-meta = {
-    "nidaq" : use_nidaq,
-    "proj_params" : proj_params,
-    "date_time" : dt_string
-}
-outputObj = OutputInfo(meta=meta)
 
 #%% Reading stimulus information & generating epochs
 # Ask user where the stim input file is located
@@ -65,11 +54,27 @@ routine.initializeEpochs(win,proj_params)
 
 current_epoch_idx = -1
 
-# We can keep both global and epoch time
+#%% Generating an output object
+
+# An output structure for aligning with acquired imaging frames and storing stimulus
+# meta data
+now = datetime.now()
+dt_string = now.strftime("%Y%m%d_%H%M%S")
+meta = {
+    "nidaq" : use_nidaq,
+    "proj_params" : proj_params,
+    "date_time" : dt_string,
+    "stim_name" : routine.stim_name
+}
+outputObj = OutputInfo(meta=meta)
+
+
+#%% Starting the stimulus
 print("Stimulus started...")
 
+# We should keep both global and epoch time
 routine_clock = core.Clock()
-routine_max_time = 1 * 60 # in seconds - to stop the loop if there is no other stop condition
+routine_max_time = 0.1 * 60 # in minutes - to stop the loop if there is no other stop condition
 epoch_clock = core.Clock()
 
 
@@ -125,6 +130,7 @@ while not (len(event.getKeys(['escape'])) \
         # Fill the output structure
         sample_num +=1
         stim_frame +=1
+        outputObj.sample_time.append(f'{routine_clock.getTime():.3f}')
         outputObj.sampling_interval.append(f'{time_diff:.3f}')
         outputObj.sample_num.append(sample_num)
         outputObj.stim_frame.append(stim_frame)
@@ -138,7 +144,7 @@ if meta["nidaq"]:
     daqT.clearTask(daq_counter_h)
     daqT.clearTask(daq_pulse_h)
 
-save_loc = 'C:\PyStim_outputs'
+save_loc = os.path.join(os.getcwd(),"PyStim_outputs")
 if not(os.path.exists(save_loc)):
     os.mkdir(save_loc)
 outputObj.saveOutput(save_loc)
