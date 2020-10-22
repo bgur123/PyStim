@@ -3,8 +3,9 @@ import sys  # to get file system encoding
 import numpy as np # working with arrays and numbers
 import time
 from psychopy import visual,core, gui, monitors,event, logging
+from psychopy.visual.windowwarp import Warper
 from datetime import datetime
-# import PyDAQmx as daq # DAQ not present in Mac
+# import PyDAQmx as daq 
 
 # Self written packages
 from helper import *
@@ -32,7 +33,7 @@ mon.setDistance = proj_params["observerDistancecm"]
 win = visual.Window(
     size=(proj_params['win_width_pix'] , 
         proj_params['win_height_pix']), 
-    pos = [proj_params['posX'],proj_params['posY']],bpc =6,
+    pos = [proj_params['posX'],proj_params['posY']],
     useFBO = True, screen = proj_params['onDLP'],
     allowGUI=False, color=[-1, -1, -1],
     viewOri = 0.0, fullscr=False, monitor=mon)
@@ -41,6 +42,11 @@ win = visual.Window(
 win.setRecordFrameIntervals(True)
 win._refreshTreshold = 1/proj_params["monitorRefreshRate"]+0.004 # warn if frame is late more than 4 ms
 logging.console.setLevel(logging.WARNING)
+
+# Perspective correction
+if proj_params['warper']:
+    warper = Warper(win, warp='spherical',warpfile = "",warpGridsize= 300, 
+        eyepoint = [0.5,0.5], flipHorizontal = False, flipVertical = True)
 # %% Main loop for presenting the stimulus
 stim_start = True
 stop = False # For nidaq stop condition
@@ -145,7 +151,7 @@ if meta["nidaq"]:
     daqT.clearTask(daq_counter_h)
     daqT.clearTask(daq_pulse_h)
 
-save_loc = os.path.join(os.getcwd(),"PyStim_outputs")
+save_loc = os.path.join(os.getcwd(),"PyStim_outputs") # For saving to the dir
 if not(os.path.exists(save_loc)):
     os.mkdir(save_loc)
 outputObj.saveOutput(save_loc)

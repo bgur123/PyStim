@@ -3,6 +3,7 @@ import sys  # to get file system encoding
 import numpy as np # working with arrays and numbers
 import time
 from psychopy import visual,core, gui, monitors,event, logging
+from psychopy.visual.windowwarp import Warper
 from datetime import datetime
 import PyDAQmx as daq 
 
@@ -32,7 +33,7 @@ mon.setDistance = proj_params["observerDistancecm"]
 win = visual.Window(
     size=(proj_params['win_width_pix'] , 
         proj_params['win_height_pix']), 
-    pos = [proj_params['posX'],proj_params['posY']],bpc =6,
+    pos = [proj_params['posX'],proj_params['posY']],
     useFBO = True, screen = proj_params['onDLP'],
     allowGUI=False, color=[-1, -1, -1],
     viewOri = 0.0, fullscr=False, monitor=mon)
@@ -41,6 +42,11 @@ win = visual.Window(
 win.setRecordFrameIntervals(True)
 win._refreshTreshold = 1/proj_params["monitorRefreshRate"]+0.004 # warn if frame is late more than 4 ms
 logging.console.setLevel(logging.WARNING)
+
+# Perspective correction
+if proj_params['warper']:
+    warper = Warper(win, warp='spherical',warpfile = "",warpGridsize= 300, 
+        eyepoint = [0.5,0.5], flipHorizontal = False, flipVertical = True)
 # %% Main loop for presenting the stimulus
 stim_start = True
 stop = False # For nidaq stop condition
@@ -74,7 +80,7 @@ print("Stimulus started...")
 
 # We should keep both global and epoch time
 routine_clock = core.Clock()
-routine_max_time = 0.1 * 60 # in minutes - to stop the loop if there is no other stop condition
+routine_max_time = 1 * 60 # in minutes - to stop the loop if there is no other stop condition
 epoch_clock = core.Clock()
 
 
@@ -107,7 +113,8 @@ while not (len(event.getKeys(['escape'])) \
     while (epoch_clock.getTime() < currentEpoch.total_dur_sec):
 
         # Update stimulus
-        pt.run_stimulus_v2(currentEpoch,proj_params["monitorRefreshRate"],win,outputObj)
+        pt.run_stimulus_v2(currentEpoch, epoch_clock.getTime(),
+            proj_params["monitorRefreshRate"],win,outputObj)
 
         # We need to get the current imaging frame number 
         # Also have a stop condition 
@@ -144,7 +151,7 @@ if meta["nidaq"]:
     daqT.clearTask(daq_counter_h)
     daqT.clearTask(daq_pulse_h)
 
-save_loc = os.path.join(os.getcwd(),"PyStim_outputs")
+save_loc = os.path.join(os.getcwd(),"PyStim_outputs") # For saving to the dir
 if not(os.path.exists(save_loc)):
     os.mkdir(save_loc)
 outputObj.saveOutput(save_loc)

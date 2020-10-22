@@ -23,8 +23,9 @@ def setup_params():
     options_panel.addField('Stim size Y:',60)
     options_panel.addField('Stim pos X:',120)
     options_panel.addField('Stim pos Y:',155)
-    options_panel.addField('Stim units:',choices=["degFlatPos","degFlat","deg"])
+    options_panel.addField('Stim units:',choices=["deg","degFlat","degFlatPos"])
     options_panel.addField('Bit depth:',6)
+    options_panel.addField('use warper:',initial=True)
 
     user_entry = options_panel.show()  
 
@@ -33,6 +34,7 @@ def setup_params():
     proj_params={
         "unit" : user_entry[10],
         "bit_depth" : float(user_entry[11]),
+        "warper" : user_entry[12],
         "sizeX" : float(user_entry[6]),
         "sizeY" : float(user_entry[7]),
         "posX" : float(user_entry[8]),
@@ -217,8 +219,8 @@ def run_stimulus_v2(epochObj,cur_time,screen_refresh_rate,win,outputObj):
     elif epochObj.stim_type == 'fff-v1':
         # Full field flashes
 
-        # Change the window color to desired luminance
-        win.color= epochObj.win_lum
+        # Do nothing just run loop
+        epochObj.rectangle.draw()
         win.flip()
 
         outputObj.stim_info1.append(0)

@@ -126,7 +126,7 @@ class PyStimEpoch(PyStimRoutine):
         For constructing a an epoch with pre-defined parameters.
     """
     def __init__(self, stim_type, params, stim_fname):
-        stim_info_fname = os.path.join(os.path.dirname(stim_fname),
+        stim_info_fname = os.path.join(os.path.dirname(stim_fname),'stimInfos',
                                         "stim-info_{s}.txt".format(s=stim_type))
         self.stim_type = stim_type
         self.epoch_info = self.readStimInput(stim_info_fname)
@@ -171,7 +171,7 @@ class PyStimEpoch(PyStimRoutine):
         """
         # Values must be scaled for matching bit depths which is by default
         # 8 bits in psychopy functions
-        bit_depth_scaler = (2**proj_params["bit_depth"]-1)/float(2**8-1) 
+        bit_depth_scaler = ((2**proj_params["bit_depth"])-1)/float(2**8-1) 
         if self.stim_type == 'gratings-v1':
             # Moving gratings
             dimension = 1024 # It needs to be square power-of-two (e.g. 256 x 256) for PsychoPy
@@ -201,24 +201,26 @@ class PyStimEpoch(PyStimRoutine):
             
             grating_texture = np.tile(oneD_wave, [dimension,1])
             orientation = np.mod(self.direction_deg-90,360) # direction & orientation orthogonal
+            
+            # Size of the other dimension is bigger to span all the screen
             grating = visual.GratingStim(
                 win=win, name='grating',tex=grating_texture, 
                 size=(proj_params['sizeX'], proj_params['sizeY']), ori = orientation,
                 sf=1/self.spatial_wavelength,
                 units=proj_params['unit'])
-        
+
             grating.autoLog = False 
             self.grating = grating
         elif self.stim_type == 'edges-v1':
-            # Moving edges
+            # Moving edges with a luminance before the edge comes
 
             # Pre edge window luminance (a.k.a. background)
             # Scaling so it fits to -1 1 range
             # Scaling so it is presented accurately with desired bit depth
-            self.win_lum = ((self.pre_lum*2)-1) * bit_depth_scaler 
+            self.win_lum = ((self.pre_lum*2)* bit_depth_scaler -1) 
 
             # Edge luminance
-            edge_luminance = ((self.edge_lum*2)-1) * bit_depth_scaler  
+            edge_luminance = ((self.edge_lum*2)* bit_depth_scaler-1)   
             
             # Direction of movement
             orientation = np.mod(self.direction_deg-90,360)
@@ -228,7 +230,7 @@ class PyStimEpoch(PyStimRoutine):
 
             rectangle = visual.Rect(
                         win=win, name='rectangle', units=proj_params['unit'],
-                        width=0, height=span, pos = (-42, 0.5),
+                        width=0, height=span, pos = self.defineStimPos(proj_params),
                         ori=orientation,lineWidth=0, 
                         fillColor=edge_luminance, fillColorSpace='rgb')
             rectangle.autoLog = False
@@ -236,11 +238,34 @@ class PyStimEpoch(PyStimRoutine):
 
         elif self.stim_type == 'fff-v1':
             # Full field flashes
-            self.win_lum = ((self.lum*2)-1) * bit_depth_scaler 
+            span = np.sqrt(proj_params['sizeY']**2+proj_params['sizeX']**2)
+            lum = ((self.lum*2)* bit_depth_scaler-1) 
 
+            rectangle = visual.Rect(
+                        win=win, name='rectangle', units=proj_params['unit'],
+                        size=span,lineWidth=0, 
+                        fillColor=lum, fillColorSpace='rgb')
+            rectangle.autoLog = False
+            self.rectangle = rectangle
         else:
             raise NameError(f"Stimulus type {self.stim_type} could not be initialized.")
-
+    
+    def defineStimPos(self,proj_params):
+        """ To determine where the stimulus will be located."""
+        if self.stim_type == 'edges-v1':
+            orientation = np.mod(self.direction_deg-90,360)
+            if orientation == 0:
+                stim_pos = (-proj_params['sizeX']//2,0)
+            elif orientation == 180:
+                stim_pos = (proj_params['sizeX']//2,0)
+            elif orientation == 90:
+                stim_pos = (0,proj_params['sizeY']//2)
+            elif orientation == 270:
+                stim_pos = (0,-proj_params['sizeY']//2)
+        else:
+            raise NameError(f"Stimulus type {self.stim_type} positions are not defined.")
+        
+        return stim_pos
 
 class OutputInfo(object):
     """ 

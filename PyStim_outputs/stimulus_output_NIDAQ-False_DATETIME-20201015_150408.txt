@@ -1,1 +1,0 @@
-sample_num	time_passed	sampling_interval	epoch_time	imaging_frame	stimulus_epoch	stim_frame	stim_info1	stim_info2	stim_info3	
