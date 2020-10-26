@@ -119,31 +119,32 @@ while not (len(event.getKeys(['escape'])) \
         # We need to get the current imaging frame number 
         # Also have a stop condition 
         if meta["nidaq"]:
-            
             (daq_data, data_frame, data_frameT) = \
                 daqT.check_status_daq(daq_counter_h,daq_data,routine_clock)            
             if last_data_frame != data_frame:
                 last_data_frameT = data_frameT
                 last_data_frame = data_frame
-            elif data_frameT - last_data_frameT > 1.0: # if 1 second has passed since last frame
-                stop = True
-                break
+            
             outputObj.frame_time.append(f'{data_frameT:.3f}')
         
-
         currT = routine_clock.getTime()
         time_diff = currT- prev_time 
         
         # Fill the output structure
         sample_num +=1
         stim_frame +=1
-        outputObj.sample_time.append(f'{routine_clock.getTime():.3f}')
-        outputObj.sampling_interval.append(f'{time_diff:.3f}')
+        outputObj.sample_time.append(float(f'{routine_clock.getTime():.3f}'))
+        outputObj.sampling_interval.append(float(f'{time_diff:.3f}'))
         outputObj.sample_num.append(sample_num)
         outputObj.stim_frame.append(stim_frame)
-        outputObj.epoch_time.append(f'{epoch_clock.getTime():.3f}')
+        outputObj.epoch_time.append(float(f'{epoch_clock.getTime():.3f}'))
         outputObj.imaging_frame.append(data_frame)
         outputObj.stimulus_epoch.append(current_epoch_num)
+
+        if meta["nidaq"]:
+            if data_frameT - last_data_frameT > 1.0: # if 1 second has passed since last frame
+                    stop = True
+                    break
         
         prev_time = currT
 
