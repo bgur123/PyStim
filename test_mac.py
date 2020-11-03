@@ -66,23 +66,30 @@ current_epoch_idx = -1
 # meta data
 now = datetime.now()
 dt_string = now.strftime("%Y%m%d_%H%M%S")
+
+epoch_info = {}
+for epoch_n, epoch in routine.epochs.items():
+    epoch_info[f'epoch_{epoch_n}'] = epoch.processed_params
+    epoch_info[f'epoch_{epoch_n}']['stim_type'] = epoch.stim_type
 meta = {
     "nidaq" : use_nidaq,
     "proj_params" : proj_params,
     "date_time" : dt_string,
-    "stim_name" : routine.stim_name
+    "stim_name" : routine.stim_name,
+    "epoch_infos" : epoch_info
 }
 outputObj = OutputInfo(meta=meta)
 
 
 #%% Starting the stimulus
 print("Stimulus started...")
-
+if meta["nidaq"]:
+    daq_pulse_h, daq_counter_h = daqT.configure_daq()
 # We should keep both global and epoch time
-routine_clock = core.Clock()
+
 routine_max_time = 1 * 60 # in minutes - to stop the loop if there is no other stop condition
 epoch_clock = core.Clock()
-
+routine_clock = core.Clock()
 
 while not (len(event.getKeys(['escape'])) \
     or routine_max_time < routine_clock.getTime()) and not(stop):
@@ -93,7 +100,7 @@ while not (len(event.getKeys(['escape'])) \
         routine_clock.reset()
         if meta["nidaq"]:
             # Send pulse to the imaging computer and start the counter
-            daq_pulse_h, daq_counter_h, daq_data = daqT.configure_daq()
+            daq_data = daqT.start_imaging(daq_pulse_h, daq_counter_h)
         stim_start = False
     
     # Epoch timer should be restarted at the beginning of each epoch
@@ -152,7 +159,7 @@ if meta["nidaq"]:
     daqT.clearTask(daq_counter_h)
     daqT.clearTask(daq_pulse_h)
 
-save_loc = os.path.join(os.getcwd(),"PyStim_outputs") # For saving to the dir
+save_loc = os.path.join(os.getcwd(),'PyStim_outputs') # For saving to the dir
 if not(os.path.exists(save_loc)):
     os.mkdir(save_loc)
 outputObj.saveOutput(save_loc)

@@ -195,6 +195,28 @@ def run_stimulus_v2(epochObj,cur_time,screen_refresh_rate,win,outputObj):
         outputObj.stim_info1.append(epochObj.grating.phase)
         outputObj.stim_info2.append(0)
         outputObj.stim_info3.append(0)
+    elif epochObj.stim_type == 'movingStripe-v1':
+        # Moving stripes
+
+        # Change the window color to background luminance
+        win.color= epochObj.win_lum
+
+        # Reset stripe position if epoch is starting new
+        if epochObj.startSignal:
+            epochObj.stripe.pos = epochObj.initial_pos
+            epochObj.startSignal = False
+        else:
+            movX = (epochObj.velocity/screen_refresh_rate) * np.sin(np.deg2rad(epochObj.direction_deg))
+            movY = (epochObj.velocity/screen_refresh_rate) * np.cos(np.deg2rad(epochObj.direction_deg))
+            epochObj.stripe.pos += (movX,movY)
+        epochObj.stripe.draw()
+        print(epochObj.stripe.pos)
+        win.flip()
+        
+        outputObj.stim_info1.append(epochObj.stripe.pos)
+        outputObj.stim_info2.append(0)
+        outputObj.stim_info3.append(0)
+        
     elif epochObj.stim_type == 'edges-v1':
         # Moving edges
         
@@ -216,6 +238,7 @@ def run_stimulus_v2(epochObj,cur_time,screen_refresh_rate,win,outputObj):
         outputObj.stim_info1.append(epochObj.rectangle.width)
         outputObj.stim_info2.append(0)
         outputObj.stim_info3.append(0)
+
     elif epochObj.stim_type == 'fff-v1':
         # Full field flashes
 
@@ -227,8 +250,38 @@ def run_stimulus_v2(epochObj,cur_time,screen_refresh_rate,win,outputObj):
         outputObj.stim_info2.append(0)
         outputObj.stim_info3.append(0)
         
+    elif epochObj.stim_type == 'whiteNoiseRectangles-v1':
+        # white noise
+        
+        # Reset texture if epoch is starting new
+        if epochObj.startSignal:
+            epochObj.currIdx = 0
+            epochObj.currFrameRep = 1
+            epochObj.startSignal = False
+
+        # Present the current texture (corresponding to the frame of the stimulus)
+        epochObj.white_noise_stripes.setImage(epochObj.noise_texture_scaled[epochObj.currIdx,:,:])
+        epochObj.white_noise_stripes.draw()
+        win.flip()
+
+        outputObj.stim_info1.append(epochObj.currIdx)
+        outputObj.stim_info2.append(0)
+        outputObj.stim_info3.append(0)
+
+        # Check if it is time to change the stimulus frame
+        # This calcuation is based on the update rate
+        if ((1.0/epochObj.update_rate))<(epochObj.currFrameRep * (1/screen_refresh_rate)):
+            epochObj.currFrameRep = 1
+            epochObj.currIdx += 1
+            # epochObj.toc = time.time()
+            # print(epochObj.toc- epochObj.tic)
+        else:
+            # if epochObj.currFrameRep == 1:
+            #     epochObj.tic = time.time()
+            epochObj.currFrameRep += 1
+            
     else:
-            raise NameError(f"Stimulus type {epochObj.stim_type} could not be initialized.")
+        raise NameError(f"Stimulus type {epochObj.stim_type} could not be initialized.")
 
 
             

@@ -7,8 +7,9 @@
 import numpy as np
 import re
 import os
-import pickle
+import pickle # To save .pickle files for python post processing
 import scipy.io as sio # To save .mat files
+import h5py # To import .mat files
 from psychopy import visual
 
 
@@ -30,6 +31,7 @@ class PyStimRoutine(object):
         
     def readStimInput(self, stim_fname):
         """ 
+            Parses the input .txt files 
         """
         f_handle = open(stim_fname, 'r')
         stim_input_raw = {}
@@ -59,11 +61,10 @@ class PyStimRoutine(object):
         if self.total_epoch_n != len(self.epoch_nums):
             raise ValueError("Total epoch number doesn't match with the number of given epochs") 
         
+        # Generate the individual epochs
         self.stim_types = \
             list(map(str, stim_input_raw['stim_type']))
-
         self.epochs = {}
-
         for idxEpoch, iEpoch in enumerate(self.epoch_nums):
             parameters = {}
             for key in stim_input_raw.keys():
@@ -73,7 +74,7 @@ class PyStimRoutine(object):
                                             parameters,self.stim_fname))
 
     def generateEpochSeries(self):
-        
+        """ Generates epoch series for a single trial """
         if self.randomization_condition == 0:
             # No randomization
             series = self.epoch_nums
@@ -126,9 +127,13 @@ class PyStimEpoch(PyStimRoutine):
         For constructing a an epoch with pre-defined parameters.
     """
     def __init__(self, stim_type, params, stim_fname):
-        stim_info_fname = os.path.join(os.path.dirname(stim_fname),'stimInfos',
-                                        "stim-info_{s}.txt".format(s=stim_type))
+
+        # Stimulus information is stored in an additional .txt file 
+        # This file contains parameters that are going to be used for the epoch.
+        stim_info_fname = os.path.join(os.path.dirname(os.path.dirname(stim_fname)),
+                                        'stim_info', "stim-info_{s}.txt".format(s=stim_type))
         self.stim_type = stim_type
+        self.stim_fname = stim_fname
         self.epoch_info = self.readStimInput(stim_info_fname)
         self.processed_params = self.processEpochInfo(self.epoch_info,params)
 
@@ -211,6 +216,40 @@ class PyStimEpoch(PyStimRoutine):
 
             grating.autoLog = False 
             self.grating = grating
+        elif self.stim_type == 'movingStripe-v1':
+            # Moving stripe that covers the whole screen
+
+            
+            # Luminances need to be scaled
+            stripe_lum = ((self.stripe_lum*2)* bit_depth_scaler -1) 
+            self.win_lum = ((self.background_lum*2)* bit_depth_scaler -1) 
+
+            # Direction of movement
+            orientation = np.mod(self.direction_deg-90,360)
+            
+          
+            #
+            diag = np.sqrt(proj_params['sizeY']**2+proj_params['sizeX']**2)
+            height = diag * 2
+
+            self.initial_pos, distance_to_travel = self.defineStimPos(proj_params)
+            distance_to_travel += self.width
+            retractX = (self.width/2) * np.sin(np.deg2rad(self.direction_deg))
+            retractY = (self.width/2) * np.cos(np.deg2rad(self.direction_deg))
+            self.initial_pos = (self.initial_pos[0]-retractX,\
+                self.initial_pos[1]-retractY)
+            print(f'Dir: {self.direction_deg} Distance:{distance_to_travel}' )
+            # Total time required is calculated automatically
+            self.total_dur_sec = distance_to_travel/self.velocity
+
+            stripe = visual.Rect(
+                        win=win, name='stripe', units=proj_params['unit'],
+                        width=self.width, height=height, pos = self.initial_pos,
+                        ori=orientation,lineWidth=0, 
+                        fillColor=stripe_lum, fillColorSpace='rgb')
+            stripe.autoLog = False
+            self.stripe = stripe
+
         elif self.stim_type == 'edges-v1':
             # Moving edges with a luminance before the edge comes
 
@@ -219,6 +258,8 @@ class PyStimEpoch(PyStimRoutine):
             # Scaling so it is presented accurately with desired bit depth
             self.win_lum = ((self.pre_lum*2)* bit_depth_scaler -1) 
 
+
+            
             # Edge luminance
             edge_luminance = ((self.edge_lum*2)* bit_depth_scaler-1)   
             
@@ -226,11 +267,12 @@ class PyStimEpoch(PyStimRoutine):
             orientation = np.mod(self.direction_deg-90,360)
 
             # The edge should fill the screen - the maximum possible size
-            span = np.sqrt(proj_params['sizeY']**2+proj_params['sizeX']**2)
-
+            screen_diag = np.sqrt(proj_params['sizeY']**2+proj_params['sizeX']**2)
+            height = screen_diag * 2
+            stim_pos, _ = self.defineStimPos(proj_params)
             rectangle = visual.Rect(
                         win=win, name='rectangle', units=proj_params['unit'],
-                        width=0, height=span, pos = self.defineStimPos(proj_params),
+                        width=0, height=height, pos = stim_pos,
                         ori=orientation,lineWidth=0, 
                         fillColor=edge_luminance, fillColorSpace='rgb')
             rectangle.autoLog = False
@@ -247,25 +289,93 @@ class PyStimEpoch(PyStimRoutine):
                         fillColor=lum, fillColorSpace='rgb')
             rectangle.autoLog = False
             self.rectangle = rectangle
+
+        elif self.stim_type == 'whiteNoiseRectangles-v1':
+            # TODO: Change to accomodate vertical horizontal and squares of white noise
+
+            frame_n = int(self.update_rate * self.total_dur_sec) 
+            
+            # Update rate needs to be a multiple of screen refresh rate otherwise it is not possible to present it
+            if not((proj_params['monitorRefreshRate']/self.update_rate).is_integer()):
+                raise ValueError(f"Update rate: {self.update_rate} not possible with screen refresh rate: {proj_params['monitorRefreshRate']}.")
+            
+
+            # Width of both dimensions have to be a divisor of screen dimensions
+            if self.x_width != 0:
+                isNotDivX = bool(np.mod(proj_params['sizeX'],self.x_width))
+                if isNotDivX:
+                    raise ValueError(f"Stripe X width: {self.x_width} not divisible to screen X width {proj_params['sizeX']}.")
+                x_dim = int(proj_params['sizeX']/self.x_width)
+            else:
+                x_dim = 1
+            if self.y_width != 0: 
+                isNotDivY = bool(np.mod(proj_params['sizeY'],self.y_width))
+                if isNotDivY:
+                    raise ValueError(f"Stripe Y width: {self.y_width} not divisible to screen Y width {proj_params['sizeY']}.")
+                y_dim = int(proj_params['sizeY']/self.y_width)
+            else:
+                y_dim = 1
+
+            
+
+            np.random.seed(self.seed)
+
+            noise_texture= np.random.choice(np.linspace(0,1,self.uniq_vals), 
+                size=(frame_n,y_dim,x_dim))
+            # noise_texture = np.repeat(noise_texture,stripe_n,axis=1)
+            self.processed_params['noise_texture'] = noise_texture
+            curr_idx = 0
+            # Scale according to bit depth
+            noise_texture_scaled = ((noise_texture*2)* bit_depth_scaler-1) 
+            self.noise_texture_scaled = noise_texture_scaled
+
+            white_noise_stripes = visual.ImageStim(
+                win=win, name='white_noise_stripes',image=noise_texture_scaled[curr_idx,:,:], 
+                size=(proj_params['sizeX'], proj_params['sizeY']),
+                units=proj_params['unit'])
+
+            white_noise_stripes.autoLog = False 
+
+            self.white_noise_stripes = white_noise_stripes
+            self.frame_idx = curr_idx
+
         else:
             raise NameError(f"Stimulus type {self.stim_type} could not be initialized.")
     
     def defineStimPos(self,proj_params):
         """ To determine where the stimulus will be located."""
-        if self.stim_type == 'edges-v1':
-            orientation = np.mod(self.direction_deg-90,360)
-            if orientation == 0:
-                stim_pos = (-proj_params['sizeX']//2,0)
-            elif orientation == 180:
-                stim_pos = (proj_params['sizeX']//2,0)
-            elif orientation == 90:
-                stim_pos = (0,proj_params['sizeY']//2)
-            elif orientation == 270:
-                stim_pos = (0,-proj_params['sizeY']//2)
-        else:
+
+        
+        if (self.stim_type == 'edges-v1') or \
+            (self.stim_type == 'movingStripe-v1'):
+            diag = np.sqrt(proj_params['sizeY']**2+proj_params['sizeX']**2)
+            angle_y = np.degrees(np.arcsin(proj_params['sizeY'] / diag))
+            # Start the stimulus according to the pre-defined directions.
+            # Also calculates the distance that the edge or the stripe needs to travel
+            # to cover the whole screen
+            if self.direction_deg <= 90:
+                stim_pos = (-proj_params['sizeX']/2,-proj_params['sizeY']/2)
+                distance_to_travel = diag * np.sin(np.deg2rad(angle_y+self.direction_deg))
+                distance_to_travel = np.abs(distance_to_travel)
+            elif self.direction_deg <= 180:
+                stim_pos = (-proj_params['sizeX']/2,proj_params['sizeY']/2)
+                distance_to_travel = diag * np.cos(np.deg2rad(90-angle_y+self.direction_deg))
+                distance_to_travel = np.abs(distance_to_travel)
+            elif self.direction_deg <= 270:
+                stim_pos = (proj_params['sizeX']/2,proj_params['sizeY']/2)
+                distance_to_travel = diag * np.sin(np.deg2rad(angle_y+self.direction_deg))
+                distance_to_travel = np.abs(distance_to_travel)
+            elif self.direction_deg <= 360:
+                stim_pos = (proj_params['sizeX']/2,-proj_params['sizeY']/2)
+                distance_to_travel = diag * np.cos(np.deg2rad(90-angle_y+self.direction_deg))
+                distance_to_travel = np.abs(distance_to_travel)
+            else:
+                raise NameError(f"Stimulus type {self.stim_type} direction has to be given in degrees.")
+            
+        else:   
             raise NameError(f"Stimulus type {self.stim_type} positions are not defined.")
         
-        return stim_pos
+        return stim_pos, distance_to_travel
 
 class OutputInfo(object):
     """ 
@@ -273,7 +383,6 @@ class OutputInfo(object):
     """
     def __init__(self,meta=None):
 
-        # We need to parse the .txt file to understand the stimulus routine structure.
         self.meta = meta
         self.sample_num = []
         self.sample_time = []
@@ -288,7 +397,7 @@ class OutputInfo(object):
         self.stim_info3 = []
     
     def saveOutput(self,save_loc):
-        """ Saves the stimulus output structure in .txt and .pickle formats"""
+        """ Saves the stimulus output structure in .txt, .pickle and .mat formats"""
         save_str = f"""stimulus_output_NAME-{self.__dict__['meta']['stim_name']}"""\
                     f"""_NIDAQ-{self.__dict__['meta']['nidaq']}"""\
                     f"""_DATETIME-{self.__dict__['meta']['date_time']}"""

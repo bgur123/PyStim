@@ -1,0 +1,7 @@
+stim_type	whiteNoiseRectangles-v1	
+param1	total_dur_sec	float
+param2	update_rate	float
+param3	x_width	float
+param4	y_width	float
+param5	seed	int
+param6	uniq_vals	int
