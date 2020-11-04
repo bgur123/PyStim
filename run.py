@@ -93,7 +93,7 @@ routine_clock = core.Clock()
 
 while not (len(event.getKeys(['escape'])) \
     or routine_max_time < routine_clock.getTime()) and not(stop):
-
+    
     # We need to start a timer and send the pulse if NIDAQ is used at the beginning of the stimulus presentation
     if stim_start:
         sample_num = 0
@@ -102,7 +102,7 @@ while not (len(event.getKeys(['escape'])) \
             # Send pulse to the imaging computer and start the counter
             daq_data = daqT.start_imaging(daq_pulse_h, daq_counter_h)
         stim_start = False
-    
+        
     # Epoch timer should be restarted at the beginning of each epoch
     epoch_clock.reset()
 
