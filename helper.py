@@ -178,33 +178,7 @@ class PyStimEpoch(PyStimRoutine):
         # 8 bits in psychopy functions
         bit_depth_scaler = ((2**proj_params["bit_depth"])-1)/float(2**8-1) 
         if self.stim_type == 'gratings-v1':
-            # Moving gratings
-            dimension = 1024 # It needs to be square power-of-two (e.g. 256 x 256) for PsychoPy
-            
-            # Calculation of BG and FG depending on the michelson contrast definition
-            # fg-bg = c * 2 * l
-            # fg+bg = 2 * l                    
-            contrast = self.michelson_contrast
-            luminance = self.mean_luminance
-            fg = contrast * 2 * luminance
-            bg = 2*luminance - fg
-            f = 1# generate a single cycle
-
-            # Generate 1D wave and modulate the luminance and contrast
-            if self.type == "sin":
-                
-                x = np.arange(dimension)
-                # Wave needs to be scaled to 0-1 so we can modulate it easier later
-                sine_signal = (np.sin(2 * np.pi * f * x / dimension)/2 +0.5)
-                # We need to scale and shift the wave to match the fg bg values
-                # We also need to scale for bit depth since DLP has 6 bits
-                oneD_wave = sine_signal * 2*(fg - bg) * bit_depth_scaler  # Scaling the signal
-                oneD_wave = oneD_wave -1 + bg 
-            else:
-                raise ValueError("Grating type {s} doesn't exist".format(\
-                    s=self.type))
-            
-            grating_texture = np.tile(oneD_wave, [dimension,1])
+            grating_texture = self.generateGratingTexture(bit_depth_scaler,dimension = 1024)
             orientation = np.mod(self.direction_deg-90,360) # direction & orientation orthogonal
             
             # Size of the other dimension is bigger to span all the screen
@@ -216,6 +190,23 @@ class PyStimEpoch(PyStimRoutine):
 
             grating.autoLog = False 
             self.grating = grating
+
+        elif self.stim_type == 'centered-gratings-v1':
+            # Gratings that are centered in a defined position with a certain size
+            # TODO: Find a general formula for Spatial Frequency for changing X and Y dimensions of screen 
+            grating_texture = self.generateGratingTexture(bit_depth_scaler,dimension = 1024)
+            orientation = np.mod(self.direction_deg-90,360) # direction & orientation orthogonal
+
+            
+            grating = visual.GratingStim(
+                win=win, name='grating',tex=grating_texture, mask='circle',
+                size=(self.diameter_deg, self.diameter_deg), ori = orientation,
+                sf=1/self.spatial_wavelength,pos=(self.x_center,self.y_center),
+                units=proj_params['unit'])
+
+            grating.autoLog = False 
+            self.grating = grating
+
         elif self.stim_type == 'movingStripe-v1':
             # Moving stripe that covers the whole screen
 
@@ -342,6 +333,35 @@ class PyStimEpoch(PyStimRoutine):
         else:
             raise NameError(f"Stimulus type {self.stim_type} could not be initialized.")
     
+    def generateGratingTexture(self, bit_depth_scaler,dimension = 1024):
+        # Moving gratings
+        dimension = 1024 # It needs to be square power-of-two (e.g. 256 x 256) for PsychoPy
+        
+        # Calculation of BG and FG depending on the michelson contrast definition
+        # fg-bg = c * 2 * l
+        # fg+bg = 2 * l                    
+        contrast = self.michelson_contrast
+        luminance = self.mean_luminance
+        fg = contrast * 2 * luminance
+        bg = 2*luminance - fg
+        f = 1# generate a single cycle
+
+        # Generate 1D wave and modulate the luminance and contrast
+        if self.type == "sin":
+            
+            x = np.arange(dimension)
+            # Wave needs to be scaled to 0-1 so we can modulate it easier later
+            sine_signal = (np.sin(2 * np.pi * f * x / dimension)/2 +0.5)
+            # We need to scale and shift the wave to match the fg bg values
+            # We also need to scale for bit depth since DLP has 6 bits
+            oneD_wave = sine_signal * 2*(fg - bg) * bit_depth_scaler  # Scaling the signal
+            oneD_wave = oneD_wave -1 + bg 
+        else:
+            raise ValueError("Grating type {s} doesn't exist".format(\
+                s=self.type))
+        grating_texture = np.tile(oneD_wave, [dimension,1])
+        return grating_texture
+
     def defineStimPos(self,proj_params):
         """ To determine where the stimulus will be located."""
 

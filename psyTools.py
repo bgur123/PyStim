@@ -178,7 +178,7 @@ def run_stimulus_v2(epochObj,cur_time,screen_refresh_rate,win,outputObj):
     """ For drawing and updating the PsychoPy stimulus objects"""
 
     
-    if epochObj.stim_type == 'gratings-v1':
+    if epochObj.stim_type in ['gratings-v1', 'centered-gratings-v1']:
        
         # Moving gratings
 
@@ -282,10 +282,6 @@ def run_stimulus_v2(epochObj,cur_time,screen_refresh_rate,win,outputObj):
             
     else:
         raise NameError(f"Stimulus type {epochObj.stim_type} could not be initialized.")
-
-
-            
-            
 
 
         
