@@ -13,10 +13,7 @@ import psyTools as pt
 import nidaqTools as daqT
 
 #%% Initialize 
-# Parameters of projection for stimulus creation
-(proj_params, use_nidaq) = pt.setup_params()
-
-#%% Reading stimulus information & generating epochs
+# Reading stimulus information & generating epochs
 # Ask user where the stim input file is located
 stim_fname = gui.fileOpenDlg(os.getcwd())[0]
 # Pre-organizing the routine and epochs
@@ -25,14 +22,14 @@ print('Stimulus routine with {eN} epochs is generated...'.format(\
     eN = routine.total_epoch_n))
 
 #%% We need a monitor and a window to present the stimulus
+# Parameters of projection for stimulus creation
+(proj_params, use_nidaq) = pt.setup_params(stim_fname)
+# Overwrite the current monitor parameters
 mon = monitors.Monitor(proj_params["monitorName"])
-mon.setSizePix = proj_params["monitorSizePix"]
-mon.setWidth = proj_params["monitorWidthcm"]
-mon.setDistance = proj_params["observerDistancecm"]
 
+#TODO: Check the view scale
 win = visual.Window(
-    size=(proj_params['win_width_pix'] , 
-        proj_params['win_height_pix']), 
+    size=mon.getSizePix(), viewScale =[1,1],
     pos = [proj_params['posX'],proj_params['posY']],
     useFBO = True, screen = proj_params['onDLP'],
     allowGUI=False, color=[-1, -1, -1],
@@ -93,7 +90,7 @@ routine_clock = core.Clock()
 
 while not (len(event.getKeys(['escape'])) \
     or routine_max_time < routine_clock.getTime()) and not(stop):
-    
+
     # We need to start a timer and send the pulse if NIDAQ is used at the beginning of the stimulus presentation
     if stim_start:
         sample_num = 0
@@ -102,7 +99,7 @@ while not (len(event.getKeys(['escape'])) \
             # Send pulse to the imaging computer and start the counter
             daq_data = daqT.start_imaging(daq_pulse_h, daq_counter_h)
         stim_start = False
-        
+    
     # Epoch timer should be restarted at the beginning of each epoch
     epoch_clock.reset()
 

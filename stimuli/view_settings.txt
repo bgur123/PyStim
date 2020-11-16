@@ -1,0 +1,6 @@
+screen_refresh_rate	60
+stim_pos_x	70
+stim_pos_y	220
+
+
+					

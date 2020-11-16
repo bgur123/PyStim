@@ -8,46 +8,78 @@ import time
 
 from psychopy import visual,core,event, gui, monitors
 from helper import *
-def setup_params():
+def setup_params(stim_fname):
+    """ 
+        Configures the parameters of stimulus presentation.
+    """
+
+    # Take view settings
+    view_settings_file = os.path.join(os.path.dirname(os.path.dirname(stim_fname)),
+                                        'view_settings.txt')
+    f_handle = open(view_settings_file, 'r')
+    view_settings = {}
+    for line in f_handle:
+        line = re.sub('\n', '', line)
+        line = re.sub('\r', '', line)
+        line = line.split('\t')
+        if line[0]: # If there is input
+            view_settings[line[0]] = float(line[1])
+            
+    
+    # Put them in a gui so they can be modified and seen before stimulation
     options_panel = gui.Dlg(title="PyStim options")
     options_panel.addText('Enter desired run options')
-    options_panel.addText("Below are current options for DLP")
-    options_panel.addField('Monitor settings:', choices=monitors.getAllMonitors())
-    options_panel.addField('use DLP:',initial=True)
-    options_panel.addField('use NIDAQ:',initial=True)
-    options_panel.addField('Refresh rate:',60)
-    options_panel.addText("Refresh rate has to match with the monitor's")
-    options_panel.addField('Stim win width pix:',1010)
-    options_panel.addField('Stim win height pix:',490)
-    options_panel.addField('Stim size X:',84)
-    options_panel.addField('Stim size Y:',60)
-    options_panel.addField('Stim pos X:',120)
-    options_panel.addField('Stim pos Y:',155)
-    options_panel.addField('Stim units:',choices=["deg","degFlat","degFlatPos"])
-    options_panel.addField('Bit depth:',6)
-    options_panel.addField('use warper:',initial=True)
+    options_panel.addText("Below are default options determined from view_setting.txt")
+
+    options_panel.addField('Monitor settings:', choices=monitors.getAllMonitors()) # idx: 0
+    options_panel.addText("Check monitor settings from PsychoPy app and make sure that \n they are correct.")
+    # DLP and NIDAQ
+    options_panel.addField('use DLP:',initial=True) # idx: 1
+    options_panel.addField('use NIDAQ:',initial=True) # idx: 2
+
+    # Screen settings
+    options_panel.addText("Settings for the screen") 
+    options_panel.addField('Refresh rate:',view_settings['screen_refresh_rate']) # idx: 3
+    options_panel.addText("Refresh rate has to match with the screen's") 
+
+    # Stimulus window settings
+    options_panel.addText("Settings for the stimulus window") 
+    options_panel.addField('Stim win pos X:',view_settings['stim_pos_x']) # idx: 4
+    options_panel.addField('Stim win pos Y:',view_settings['stim_pos_y']) # idx: 5
+    
+    # Presentation settings
+    options_panel.addText("Settings for the stimulus presentation") 
+    options_panel.addField('Stim units:',choices=["deg","degFlat","degFlatPos"]) # idx: 6
+    options_panel.addField('Bit depth:',6) # idx: 7
+    options_panel.addField('use warper:',initial=True) # idx: 8
 
     user_entry = options_panel.show()  
-
     mon = monitors.Monitor(user_entry[0])
 
+    stim_size_X = np.arctan((mon.getWidth()/2) / mon.getDistance())
+    stim_size_X = abs(np.degrees(stim_size_X)) * 2 # we need the full extend
+
+    stim_size_Y = np.arctan((mon.getWidth()/2) / mon.getDistance())
+    stim_size_Y = abs(np.degrees(stim_size_Y)) * 2
+
     proj_params={
-        "unit" : user_entry[10],
-        "bit_depth" : float(user_entry[11]),
-        "warper" : user_entry[12],
-        "sizeX" : float(user_entry[6]),
-        "sizeY" : float(user_entry[7]),
-        "posX" : float(user_entry[8]),
-        "posY" : float(user_entry[9]),
-        "win_width_pix" : float(user_entry[4]),
-        "win_height_pix" : float(user_entry[5]),
+        "unit" : user_entry[6],
+        "bit_depth" : float(user_entry[7]),
+        "warper" : user_entry[8],
+        "sizeX" : stim_size_X,
+        "sizeY" : stim_size_Y,
+        "posX" : float(user_entry[4]),
+        "posY" : float(user_entry[5]),
+        "win_width_pix" : mon.getSizePix()[0],
+        "win_height_pix" : mon.getSizePix()[1],
         "onDLP" : int(user_entry[1]), # 1 is for DLP 0 is for PC monitors
         "monitorName" : mon.name,
         "monitorSizePix" : mon.getSizePix(),
         "monitorWidthcm" : mon.getWidth(),
-        "observerDistancecm" : mon.getDistance() ,
+        "observerDistancecm" : mon.getDistance(),
         "monitorRefreshRate" : float(user_entry[3])
     }
+    print(proj_params)
     return proj_params, user_entry[2]
 
 def initialize_stimulus(epochObj,win,proj_params,outputObj):
