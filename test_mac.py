@@ -29,7 +29,7 @@ mon = monitors.Monitor(proj_params["monitorName"])
 
 #TODO: Check the view scale
 win = visual.Window(
-    size=mon.getSizePix(), viewScale =[1,1],
+    size=mon.getSizePix(), viewScale =proj_params['viewScale'],
     pos = [proj_params['posX'],proj_params['posY']],
     useFBO = True, screen = proj_params['onDLP'],
     allowGUI=False, color=[-1, -1, -1],

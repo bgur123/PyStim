@@ -49,9 +49,12 @@ def setup_params(stim_fname):
     
     # Presentation settings
     options_panel.addText("Settings for the stimulus presentation") 
-    options_panel.addField('Stim units:',choices=["deg","degFlat","degFlatPos"]) # idx: 6
+    options_panel.addField('Stim units:',choices=["degFlatPos","degFlat","deg"]) # idx: 6
     options_panel.addField('Bit depth:',6) # idx: 7
     options_panel.addField('use warper:',initial=True) # idx: 8
+    options_panel.addField('view scale X:',view_settings['view_scale_x']) # idx: 9
+    options_panel.addField('view scale Y:',view_settings['view_scale_y']) # idx: 10
+    
 
     user_entry = options_panel.show()  
     mon = monitors.Monitor(user_entry[0])
@@ -77,7 +80,8 @@ def setup_params(stim_fname):
         "monitorSizePix" : mon.getSizePix(),
         "monitorWidthcm" : mon.getWidth(),
         "observerDistancecm" : mon.getDistance(),
-        "monitorRefreshRate" : float(user_entry[3])
+        "monitorRefreshRate" : float(user_entry[3]),
+        "viewScale" : [float(user_entry[9]),float(user_entry[10])]
     }
     print(proj_params)
     return proj_params, user_entry[2]
