@@ -197,9 +197,8 @@ class PyStimEpoch(PyStimRoutine):
             grating_texture = self.generateGratingTexture(bit_depth_scaler,dimension = 1024)
             orientation = np.mod(self.direction_deg-90,360) # direction & orientation orthogonal
 
-            
             grating = visual.GratingStim(
-                win=win, name='grating',tex=grating_texture, mask='circle',
+                win=win, name='grating',tex=grating_texture,mask='circle',
                 size=(self.diameter_deg, self.diameter_deg), ori = orientation,
                 sf=1/self.spatial_wavelength,pos=(self.x_center,self.y_center),
                 units=proj_params['unit'])
@@ -282,7 +281,6 @@ class PyStimEpoch(PyStimRoutine):
             self.rectangle = rectangle
 
         elif self.stim_type == 'whiteNoiseRectangles-v1':
-            # TODO: Change to accomodate vertical horizontal and squares of white noise
 
             frame_n = int(self.update_rate * self.total_dur_sec) 
             
@@ -291,16 +289,18 @@ class PyStimEpoch(PyStimRoutine):
                 raise ValueError(f"Update rate: {self.update_rate} not possible with screen refresh rate: {proj_params['monitorRefreshRate']}.")
             
 
-            # Width of both dimensions have to be a divisor of screen dimensions
+            # Width of both dimensions have to be a divisor of screen dimensions, this will be based on the
+            # rounded value of the screen angular dimensions since otherwise it is not easily possible 
+            # to find a divisor
             if self.x_width != 0:
-                isNotDivX = bool(np.mod(proj_params['sizeX'],self.x_width))
+                isNotDivX = bool(np.mod(np.floor(proj_params['sizeX']),self.x_width))
                 if isNotDivX:
                     raise ValueError(f"Stripe X width: {self.x_width} not divisible to screen X width {proj_params['sizeX']}.")
                 x_dim = int(proj_params['sizeX']/self.x_width)
             else:
                 x_dim = 1
             if self.y_width != 0: 
-                isNotDivY = bool(np.mod(proj_params['sizeY'],self.y_width))
+                isNotDivY = bool(np.mod(np.floor(proj_params['sizeY']),self.y_width))
                 if isNotDivY:
                     raise ValueError(f"Stripe Y width: {self.y_width} not divisible to screen Y width {proj_params['sizeY']}.")
                 y_dim = int(proj_params['sizeY']/self.y_width)
@@ -362,6 +362,47 @@ class PyStimEpoch(PyStimRoutine):
         grating_texture = np.tile(oneD_wave, [dimension,1])
         return grating_texture
 
+    def defineStimPos_v2_underConst(self,proj_params):
+        """ To determine where the stimulus will be located."""
+
+        
+        if (self.stim_type == 'edges-v1') or \
+            (self.stim_type == 'movingStripe-v1'):
+            
+            posX = -(proj_params['sizeX']/2)/ np.cos(np.deg2rad(self.direction_deg))
+            posY = -(proj_params['sizeX']/2)/ np.sin(np.deg2rad(self.direction_deg))
+            stim_pos = (posX,posY)
+            
+            diag = np.sqrt(proj_params['sizeY']**2+proj_params['sizeX']**2)
+            diag*np.cos(np.deg2rad(self.direction_deg + 45.0))
+            angle_y = np.degrees(np.arcsin(proj_params['sizeY'] / diag))
+            # Start the stimulus according to the pre-defined directions.
+            # Also calculates the distance that the edge or the stripe needs to travel
+            # to cover the whole screen
+            if self.direction_deg <= 90:
+                stim_pos = (-proj_params['sizeX']/2,-proj_params['sizeY']/2)
+                distance_to_travel = diag * np.sin(np.deg2rad(angle_y+self.direction_deg))
+                distance_to_travel = np.abs(distance_to_travel)
+            elif self.direction_deg <= 180:
+                stim_pos = (-proj_params['sizeX']/2,proj_params['sizeY']/2)
+                distance_to_travel = diag * np.cos(np.deg2rad(90-angle_y+self.direction_deg))
+                distance_to_travel = np.abs(distance_to_travel)
+            elif self.direction_deg <= 270:
+                stim_pos = (proj_params['sizeX']/2,proj_params['sizeY']/2)
+                distance_to_travel = diag * np.sin(np.deg2rad(angle_y+self.direction_deg))
+                distance_to_travel = np.abs(distance_to_travel)
+            elif self.direction_deg <= 360:
+                stim_pos = (proj_params['sizeX']/2,-proj_params['sizeY']/2)
+                distance_to_travel = diag * np.cos(np.deg2rad(90-angle_y+self.direction_deg))
+                distance_to_travel = np.abs(distance_to_travel)
+            else:
+                raise NameError(f"Stimulus type {self.stim_type} direction has to be given in degrees.")
+            
+        else:   
+            raise NameError(f"Stimulus type {self.stim_type} positions are not defined.")
+        
+        return stim_pos, distance_to_travel
+        
     def defineStimPos(self,proj_params):
         """ To determine where the stimulus will be located."""
 

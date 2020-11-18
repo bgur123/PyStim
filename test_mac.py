@@ -27,7 +27,6 @@ print('Stimulus routine with {eN} epochs is generated...'.format(\
 # Overwrite the current monitor parameters
 mon = monitors.Monitor(proj_params["monitorName"])
 
-#TODO: Check the view scale
 win = visual.Window(
     size=mon.getSizePix(), viewScale =proj_params['viewScale'],
     pos = [proj_params['posX'],proj_params['posY']],

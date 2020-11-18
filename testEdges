@@ -1,0 +1,31 @@
+dirs = [0, 12, 45, 90, 135, 180, 225, 270, 315]
+
+for dir in dirs:
+    posX = -(proj_params['sizeX']/2)/ np.sin(np.deg2rad(dir))
+    posY = -(proj_params['sizeX']/2)/ np.cos(np.deg2rad(dir))
+
+    if np.abs(posX) > (diag/2 +1):
+        posX = 0
+    if np.abs(posY) > (diag/2 +1):
+        posY = 0
+
+    print(f'Dir:{dir}, PosX:{posX}, PosY:{posY}')
+
+
+for dir in dirs:
+    posX = -(proj_params['sizeX']/2)* np.sin(np.deg2rad(dir))
+    posY = -(proj_params['sizeX']/2)* np.cos(np.deg2rad(dir))
+
+    
+
+    print(f'Dir:{dir}, PosX:{posX}, PosY:{posY}')
+
+
+# With tan
+for dir in dirs:
+    posX = -(proj_params['sizeX']/2)/ np.tan(np.deg2rad(np.mod(90-dir,90)))
+    posY = -(proj_params['sizeY']/2)* np.tan(np.deg2rad(dir))
+
+    
+
+    print(f'Dir:{dir}, PosX:{posX}, PosY:{posY}')

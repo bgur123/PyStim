@@ -49,7 +49,7 @@ def setup_params(stim_fname):
     
     # Presentation settings
     options_panel.addText("Settings for the stimulus presentation") 
-    options_panel.addField('Stim units:',choices=["degFlatPos","degFlat","deg"]) # idx: 6
+    options_panel.addField('Stim units:',choices=["deg","degFlat","degFlatPos"]) # idx: 6
     options_panel.addField('Bit depth:',6) # idx: 7
     options_panel.addField('use warper:',initial=True) # idx: 8
     options_panel.addField('view scale X:',view_settings['view_scale_x']) # idx: 9
@@ -246,12 +246,12 @@ def run_stimulus_v2(epochObj,cur_time,screen_refresh_rate,win,outputObj):
             movY = (epochObj.velocity/screen_refresh_rate) * np.cos(np.deg2rad(epochObj.direction_deg))
             epochObj.stripe.pos += (movX,movY)
         epochObj.stripe.draw()
-        print(epochObj.stripe.pos)
+        print(f'Pos:{epochObj.stripe.pos}' )
         win.flip()
         
         outputObj.stim_info1.append(epochObj.stripe.pos)
         outputObj.stim_info2.append(0)
-        outputObj.stim_info3.append(0)
+        outputObj.stim_info3.append(0) 
         
     elif epochObj.stim_type == 'edges-v1':
         # Moving edges
@@ -269,6 +269,7 @@ def run_stimulus_v2(epochObj,cur_time,screen_refresh_rate,win,outputObj):
             epochObj.rectangle.width += \
                 2 * (epochObj.velocity/screen_refresh_rate)
         epochObj.rectangle.draw()
+        print(f'Width:{epochObj.rectangle.width}, Pos:{epochObj.rectangle.pos}')
         win.flip()
 
         outputObj.stim_info1.append(epochObj.rectangle.width)
