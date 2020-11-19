@@ -193,7 +193,18 @@ class PyStimEpoch(PyStimRoutine):
 
         elif self.stim_type == 'centered-gratings-v1':
             # Gratings that are centered in a defined position with a certain size
-            # TODO: Find a general formula for Spatial Frequency for changing X and Y dimensions of screen 
+            
+            # Background luminance
+            self.bg_lum_scaled = ((self.background_lum*2)* bit_depth_scaler -1) 
+            span = np.sqrt(proj_params['sizeY']**2+proj_params['sizeX']**2)
+            bg_rect = visual.Rect(
+                        win=win, name='rectangle', units=proj_params['unit'],
+                        size=span,lineWidth=0, 
+                        fillColor=self.bg_lum_scaled, fillColorSpace='rgb')
+            bg_rect.autoLog = False
+            self.bg_rect = bg_rect
+
+
             grating_texture = self.generateGratingTexture(bit_depth_scaler,dimension = 1024)
             orientation = np.mod(self.direction_deg-90,360) # direction & orientation orthogonal
 
@@ -213,22 +224,30 @@ class PyStimEpoch(PyStimRoutine):
             # Luminances need to be scaled
             stripe_lum = ((self.stripe_lum*2)* bit_depth_scaler -1) 
             self.win_lum = ((self.background_lum*2)* bit_depth_scaler -1) 
+            
+            # Background is defined by a rectangle that spans whole screen (and also the cut parts)
+            span = np.sqrt(proj_params['sizeY']**2+proj_params['sizeX']**2)
+            bg_rect = visual.Rect(
+                        win=win, name='rectangle', units=proj_params['unit'],
+                        size=span,lineWidth=0, 
+                        fillColor=self.win_lum, fillColorSpace='rgb')
+            bg_rect.autoLog = False
+            self.bg_rect = bg_rect
 
             # Direction of movement
             orientation = np.mod(self.direction_deg-90,360)
-            
-          
-            #
+        
+            # The height should be sufficient to cover all of the extends
             diag = np.sqrt(proj_params['sizeY']**2+proj_params['sizeX']**2)
             height = diag * 2
 
             self.initial_pos, distance_to_travel = self.defineStimPos(proj_params)
-            distance_to_travel += self.width
+            distance_to_travel += self.width # so that the stripe disappears from the screen
             retractX = (self.width/2) * np.sin(np.deg2rad(self.direction_deg))
             retractY = (self.width/2) * np.cos(np.deg2rad(self.direction_deg))
             self.initial_pos = (self.initial_pos[0]-retractX,\
-                self.initial_pos[1]-retractY)
-            print(f'Dir: {self.direction_deg} Distance:{distance_to_travel}' )
+                self.initial_pos[1]-retractY) # Retracting
+                
             # Total time required is calculated automatically
             self.total_dur_sec = distance_to_travel/self.velocity
 
@@ -247,9 +266,14 @@ class PyStimEpoch(PyStimRoutine):
             # Scaling so it fits to -1 1 range
             # Scaling so it is presented accurately with desired bit depth
             self.win_lum = ((self.pre_lum*2)* bit_depth_scaler -1) 
+            span = np.sqrt(proj_params['sizeY']**2+proj_params['sizeX']**2)
+            bg_rect = visual.Rect(
+                        win=win, name='rectangle', units=proj_params['unit'],
+                        size=span,lineWidth=0, 
+                        fillColor=self.win_lum, fillColorSpace='rgb')
+            bg_rect.autoLog = False
+            self.bg_rect = bg_rect
 
-
-            
             # Edge luminance
             edge_luminance = ((self.edge_lum*2)* bit_depth_scaler-1)   
             
@@ -272,7 +296,7 @@ class PyStimEpoch(PyStimRoutine):
             # Full field flashes
             span = np.sqrt(proj_params['sizeY']**2+proj_params['sizeX']**2)
             lum = ((self.lum*2)* bit_depth_scaler-1) 
-
+            self.win_lum = lum
             rectangle = visual.Rect(
                         win=win, name='rectangle', units=proj_params['unit'],
                         size=span,lineWidth=0, 

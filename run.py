@@ -92,6 +92,7 @@ while not (len(event.getKeys(['escape'])) \
 
     # We need to start a timer and send the pulse if NIDAQ is used at the beginning of the stimulus presentation
     if stim_start:
+        
         sample_num = 0
         routine_clock.reset()
         if meta["nidaq"]:
@@ -112,11 +113,12 @@ while not (len(event.getKeys(['escape'])) \
     stim_frame = 0
     epoch_start = False
 
+    
     # Epochs will be run in this loop
     while (epoch_clock.getTime() < currentEpoch.total_dur_sec):
 
         # Update stimulus
-        pt.run_stimulus_v2(currentEpoch, epoch_clock.getTime(),
+        pt.run_stimulus(currentEpoch, epoch_clock.getTime(),
             proj_params["monitorRefreshRate"],win,outputObj)
 
         # We need to get the current imaging frame number 
@@ -150,6 +152,8 @@ while not (len(event.getKeys(['escape'])) \
                     break
         
         prev_time = currT
+
+        
 
 if meta["nidaq"]:
     daqT.clearTask(daq_counter_h)

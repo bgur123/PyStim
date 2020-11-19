@@ -174,43 +174,7 @@ def update_stimulus(epochObj,screen_refresh_rate,win,epoch_clock,outputObj):
         outputObj.stim_info2.append(0)
         outputObj.stim_info3.append(0)
 
-def run_stimulus(epochObj,proj_params,screen_refresh_rate,win,epoch_clock,
-                    outputObj):
-    """ For drawing and updating the PsychoPy stimulus objects"""
-
-    
-    if epochObj.stim_type == 'gratings-v1':
-        tic = time.time()
-        # Moving gratings
-        if epochObj.startSignal:
-            orientation = np.mod(epochObj.direction_deg-90,360) # direction & orientation orthogonal
-            grating = visual.GratingStim(
-                win=win, name='grating',tex=epochObj.grating_texture, 
-                size=(proj_params['size'], proj_params['size']), ori = orientation,
-                sf=1/epochObj.spatial_wavelength,
-                units=proj_params['unit'])
-            grating.autoLog = False 
-            tocc=time.time()
-            epochObj.grating = grating
-            epochObj.startSignal = False
-        toc1 = time.time()
-        
-        # For moving the grating we will need to advance the phase
-        # according to the desired velocity and screen refresh rate
-        #| v (degree/s) / refresh rate (update/s) |
-        # Since phase advances are related to 1 cycle we should also
-        # use spatial wavelength of the grating.
-        epochObj.grating.phase += \
-            (epochObj.velocity/screen_refresh_rate)/epochObj.spatial_wavelength
-        epochObj.grating.draw()
-        win.flip()
-        toc2 = time.time()
-        outputObj.stim_info1.append(epochObj.grating.phase)
-        outputObj.stim_info2.append(0)
-        outputObj.stim_info3.append(0)
-
-
-def run_stimulus_v2(epochObj,cur_time,screen_refresh_rate,win,outputObj):
+def run_stimulus(epochObj,cur_time,screen_refresh_rate,win,outputObj):
     """ For drawing and updating the PsychoPy stimulus objects"""
 
     
@@ -218,6 +182,9 @@ def run_stimulus_v2(epochObj,cur_time,screen_refresh_rate,win,outputObj):
        
         # Moving gratings
 
+        if epochObj.stim_type == 'centered-gratings-v1':
+            # Draw the background rectangle with the desired luminance
+            epochObj.bg_rect.draw()
         # We will need to advance the phase
         # according to the desired velocity and screen refresh rate
         #| v (degree/s) / refresh rate (update/s) |
@@ -234,8 +201,8 @@ def run_stimulus_v2(epochObj,cur_time,screen_refresh_rate,win,outputObj):
     elif epochObj.stim_type == 'movingStripe-v1':
         # Moving stripes
 
-        # Change the window color to background luminance
-        win.color= epochObj.win_lum
+        # Draw the background rectangle with the desired luminance
+        epochObj.bg_rect.draw()
 
         # Reset stripe position if epoch is starting new
         if epochObj.startSignal:
@@ -246,7 +213,6 @@ def run_stimulus_v2(epochObj,cur_time,screen_refresh_rate,win,outputObj):
             movY = (epochObj.velocity/screen_refresh_rate) * np.cos(np.deg2rad(epochObj.direction_deg))
             epochObj.stripe.pos += (movX,movY)
         epochObj.stripe.draw()
-        print(f'Pos:{epochObj.stripe.pos}' )
         win.flip()
         
         outputObj.stim_info1.append(epochObj.stripe.pos)
@@ -256,8 +222,8 @@ def run_stimulus_v2(epochObj,cur_time,screen_refresh_rate,win,outputObj):
     elif epochObj.stim_type == 'edges-v1':
         # Moving edges
         
-        # Change the window color to background luminance
-        win.color= epochObj.win_lum
+        # Draw the background rectangle with the desired luminance
+        epochObj.bg_rect.draw()
 
         # Reset rectangle if epoch is starting new
         if epochObj.startSignal:
@@ -269,7 +235,6 @@ def run_stimulus_v2(epochObj,cur_time,screen_refresh_rate,win,outputObj):
             epochObj.rectangle.width += \
                 2 * (epochObj.velocity/screen_refresh_rate)
         epochObj.rectangle.draw()
-        print(f'Width:{epochObj.rectangle.width}, Pos:{epochObj.rectangle.pos}')
         win.flip()
 
         outputObj.stim_info1.append(epochObj.rectangle.width)
@@ -322,4 +287,13 @@ def run_stimulus_v2(epochObj,cur_time,screen_refresh_rate,win,outputObj):
 
 
         
-        
+def set_window_color(win, epochObj):
+    """ 
+        Sets the window color before stimulus presentation so that the previous epoch 
+        luminance doesn't produce a flash. This phenomena, I think, is a bug in PsychoPy
+    """
+
+    if epochObj.stim_type in ['movingStripe-v1', 'edges-v1']:
+        win.color= epochObj.win_lum
+    
+    return None

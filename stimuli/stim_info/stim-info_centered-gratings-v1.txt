@@ -9,3 +9,4 @@ param7	mean_luminance	float
 param8	diameter_deg	float
 param9	x_center	int
 param10	y_center	int
+param11	background_lum	float
