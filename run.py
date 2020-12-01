@@ -160,7 +160,7 @@ if meta["nidaq"]:
     daqT.clearTask(daq_counter_h)
     daqT.clearTask(daq_pulse_h)
 
-save_loc = os.path.join(os.getcwd(),'PyStim_outputs') # For saving to the dir
+save_loc = os.path.join('C:\\','PyStim_outputs') # For saving to the dir
 if not(os.path.exists(save_loc)):
     os.mkdir(save_loc)
 outputObj.saveOutput(save_loc)

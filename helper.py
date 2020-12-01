@@ -509,8 +509,8 @@ class OutputInfo(object):
 
         # Saving as a .pickle file for easier Python processing
         saveDict = {}
-        for key in workspace['outputObj'].__dict__.keys():
-            saveDict[key] = workspace['outputObj'].__dict__[key]
+        for key in self.__dict__.keys():
+            saveDict[key] = self.__dict__[key]
 
         savePath = os.path.join(save_loc, f"{save_str}.pickle")
         saveVar = open(savePath, "wb")
