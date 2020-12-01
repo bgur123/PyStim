@@ -72,7 +72,8 @@ meta = {
     "proj_params" : proj_params,
     "date_time" : dt_string,
     "stim_name" : routine.stim_name,
-    "epoch_infos" : epoch_info
+    "epoch_infos" : epoch_info,
+    "randomization_condition" : routine.randomization_condition
 }
 outputObj = OutputInfo(meta=meta)
 

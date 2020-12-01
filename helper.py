@@ -508,10 +508,13 @@ class OutputInfo(object):
         file_h.close()
 
         # Saving as a .pickle file for easier Python processing
+        saveDict = {}
+        for key in workspace['outputObj'].__dict__.keys():
+            saveDict[key] = workspace['outputObj'].__dict__[key]
+
         savePath = os.path.join(save_loc, f"{save_str}.pickle")
         saveVar = open(savePath, "wb")
-        saveDict = {'outputObj' : self}
-        pickle.dump(saveDict, saveVar, protocol=-1)
+        pickle.dump(saveDict, saveVar, protocol=2) # Protocol 2 (and below) is compatible with Python 2.7 downstream analysis
         saveVar.close()
 
         # Saving as a .mat file
