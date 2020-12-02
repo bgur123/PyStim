@@ -240,6 +240,32 @@ def run_stimulus(epochObj,cur_time,screen_refresh_rate,win,outputObj):
         outputObj.stim_info1.append(epochObj.rectangle.width)
         outputObj.stim_info2.append(0)
         outputObj.stim_info3.append(0)
+    elif epochObj.stim_type == 'stepFlash-v1':
+        # Full field flashes that occur with a certain Weber contrast
+        # after a pre-defined duration
+        
+
+        if cur_time > epochObj.initial_dur_sec:
+            epochObj.rectangle.fillColor = epochObj.second_lum
+        else:
+            epochObj.rectangle.fillColor = epochObj.first_lum
+        epochObj.rectangle.draw()
+        win.flip()
+
+        outputObj.stim_info1.append(0)
+        outputObj.stim_info2.append(0)
+        outputObj.stim_info3.append(0)
+
+    elif epochObj.stim_type == 'fff-v1':
+        # Full field flashes
+
+        # Do nothing just run loop
+        epochObj.rectangle.draw()
+        win.flip()
+
+        outputObj.stim_info1.append(0)
+        outputObj.stim_info2.append(0)
+        outputObj.stim_info3.append(0)
 
     elif epochObj.stim_type == 'fff-v1':
         # Full field flashes

@@ -304,6 +304,23 @@ class PyStimEpoch(PyStimRoutine):
             rectangle.autoLog = False
             self.rectangle = rectangle
 
+        elif self.stim_type == 'stepFlash-v1':
+            # Full field flashes that occur with a certain Weber contrast
+            # after a pre-defined duration
+            span = np.sqrt(proj_params['sizeY']**2+proj_params['sizeX']**2)
+             
+            # Second luminance is calculated via Weber contrast formula
+            second_lum = (self.weber_c * self.initial_lum) + self.initial_lum
+             
+            self.first_lum = ((self.initial_lum*2)* bit_depth_scaler-1)
+            self.second_lum = ((second_lum*2)* bit_depth_scaler-1)
+            rectangle = visual.Rect(
+                        win=win, name='rectangle', units=proj_params['unit'],
+                        size=span,lineWidth=0, 
+                        fillColor=self.first_lum, fillColorSpace='rgb')
+            rectangle.autoLog = False
+            self.rectangle = rectangle
+
         elif self.stim_type == 'whiteNoiseRectangles-v1':
 
             frame_n = int(self.update_rate * self.total_dur_sec) 

@@ -84,7 +84,7 @@ if meta["nidaq"]:
     daq_pulse_h, daq_counter_h = daqT.configure_daq()
 # We should keep both global and epoch time
 
-routine_max_time = 1 * 60 # in minutes - to stop the loop if there is no other stop condition
+routine_max_time = 0.1 * 60 # in minutes - to stop the loop if there is no other stop condition
 epoch_clock = core.Clock()
 routine_clock = core.Clock()
 
