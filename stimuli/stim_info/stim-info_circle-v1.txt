@@ -1,0 +1,7 @@
+stim_type	circle-v1	
+param1	total_dur_sec	float
+param2	luminance	float
+param3	background_lum	float
+param4	diameter_deg	float
+param5	x_center	int
+param6	y_center	int

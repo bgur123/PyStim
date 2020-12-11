@@ -1,0 +1,24 @@
+total_epoch_num	2	
+randomization_condition	0	
+epoch_nums	1	2
+stim_type	circle-v1	circle-v1
+param1	5	5
+param2	0	1
+param3	0.5	0.5
+param4	20	20
+param5	0	0
+param6	0	0
+param7		
+param8		
+param9		
+param10		
+param11		
+param12		
+param13		
+param14		
+param15		
+param16		
+param17		
+param18		
+param19		
+param20		
