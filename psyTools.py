@@ -298,7 +298,7 @@ def run_stimulus(epochObj,cur_time,screen_refresh_rate,win,outputObj):
 
         # Check if it is time to change the stimulus frame
         # This calcuation is based on the update rate
-        if ((1.0/epochObj.update_rate))<(epochObj.currFrameRep * (1/screen_refresh_rate)):
+        if ((1.0/epochObj.update_rate))=<(epochObj.currFrameRep * (1/screen_refresh_rate)):
             epochObj.currFrameRep = 1
             epochObj.currIdx += 1
             # epochObj.toc = time.time()
