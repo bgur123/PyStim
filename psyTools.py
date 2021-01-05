@@ -278,6 +278,17 @@ def run_stimulus(epochObj,cur_time,screen_refresh_rate,win,outputObj):
         outputObj.stim_info2.append(0)
         outputObj.stim_info3.append(0)
         
+    elif epochObj.stim_type == 'test-coordinates':
+        # Test the coordinates
+
+        # Do nothing just run loop
+        epochObj.test_stim.draw()
+        win.flip()
+
+        outputObj.stim_info1.append(0)
+        outputObj.stim_info2.append(0)
+        outputObj.stim_info3.append(0)
+        
     elif epochObj.stim_type == 'whiteNoiseRectangles-v1':
         # white noise
         
@@ -298,7 +309,7 @@ def run_stimulus(epochObj,cur_time,screen_refresh_rate,win,outputObj):
 
         # Check if it is time to change the stimulus frame
         # This calcuation is based on the update rate
-        if ((1.0/epochObj.update_rate))=<(epochObj.currFrameRep * (1/screen_refresh_rate)):
+        if ((1.0/epochObj.update_rate))<=(epochObj.currFrameRep * (1/screen_refresh_rate)):
             epochObj.currFrameRep = 1
             epochObj.currIdx += 1
             # epochObj.toc = time.time()

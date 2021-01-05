@@ -1,0 +1,2 @@
+stim_type	test-coordinates	
+param1	total_dur_sec	float

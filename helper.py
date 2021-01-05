@@ -371,6 +371,25 @@ class PyStimEpoch(PyStimRoutine):
             self.white_noise_stripes = white_noise_stripes
             self.frame_idx = curr_idx
 
+        elif self.stim_type == 'test-coordinates':
+
+            test_texture = np.zeros(shape=(20,20))
+            test_texture[10,10] = 1
+            test_texture[1,1] = 1
+            test_texture[1,19] = 0.5
+    
+            # Scale according to bit depth
+            test_texture_scaled = ((test_texture*2)* bit_depth_scaler-1) 
+            self.test_texture_scaled = test_texture_scaled
+
+            test_stim = visual.ImageStim(
+                win=win, name='test_stim',image=test_texture_scaled, 
+                size=(proj_params['sizeX'], proj_params['sizeY']),
+                units=proj_params['unit'])
+
+            test_stim.autoLog = False 
+
+            self.test_stim = test_stim
         else:
             raise NameError(f"Stimulus type {self.stim_type} could not be initialized.")
     
