@@ -376,7 +376,8 @@ class PyStimEpoch(PyStimRoutine):
             test_texture = np.zeros(shape=(20,20))
             test_texture[10,10] = 1
             test_texture[1,1] = 1
-            test_texture[1,19] = 0.5
+            test_texture[1,19] = 0.6
+            test_texture[19,19] = 0.2
     
             # Scale according to bit depth
             test_texture_scaled = ((test_texture*2)* bit_depth_scaler-1) 
