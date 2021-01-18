@@ -1,0 +1,9 @@
+stim_type	centered-circle-v1	
+param1	total_dur_sec	float
+param2	initial_lum	float
+param3	weber_c	float
+param4	initial_dur_sec	float
+param5	diameter_deg	float
+param6	x_center	int
+param7	y_center	int
+param8	background_lum	float

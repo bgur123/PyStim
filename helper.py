@@ -217,6 +217,32 @@ class PyStimEpoch(PyStimRoutine):
             grating.autoLog = False 
             self.grating = grating
 
+        elif self.stim_type == 'centered-circle-v1':
+            # Circles that are centered in a defined position with a certain size
+            
+            # Background luminance
+            self.bg_lum_scaled = ((self.background_lum*2)* bit_depth_scaler -1) 
+            span = np.sqrt(proj_params['sizeY']**2+proj_params['sizeX']**2)
+            bg_rect = visual.Rect(
+                        win=win, name='rectangle', units=proj_params['unit'],
+                        size=span,lineWidth=0, 
+                        fillColor=self.bg_lum_scaled, fillColorSpace='rgb')
+            bg_rect.autoLog = False
+            self.bg_rect = bg_rect
+
+
+            # Second luminance is calculated via Weber contrast formula
+            second_lum = (self.weber_c * self.initial_lum) + self.initial_lum
+             
+            self.first_lum = ((self.initial_lum*2)* bit_depth_scaler-1)
+            self.second_lum = ((second_lum*2)* bit_depth_scaler-1)
+            circle = visual.Circle(
+                        win=win, name='circle', units=proj_params['unit'],radius = self.diameter_deg/2,
+                        fillColor=self.first_lum, fillColorSpace='rgb',pos=(self.x_center,self.y_center),
+                        lineColor = self.first_lum)
+            circle.autoLog = False
+            self.circle = circle
+
         elif self.stim_type == 'movingStripe-v1':
             # Moving stripe that covers the whole screen
 

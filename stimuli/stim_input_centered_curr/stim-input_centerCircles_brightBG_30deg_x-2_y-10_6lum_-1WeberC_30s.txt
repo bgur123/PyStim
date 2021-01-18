@@ -1,0 +1,12 @@
+total_epoch_num	7
+randomization_condition	1
+epoch_nums	1	2	3	4	5	6	7
+stim_type	fff-v1	centered-circle-v1	centered-circle-v1	centered-circle-v1	centered-circle-v1	centered-circle-v1	centered-circle-v1
+param1	2	3	3	3	3	3	3
+param2	1	0.0625	0.125	0.25	0.5	0.75	1
+param3		-1	-1	-1	-1	-1	-1
+param4		1	1	1	1	1	1
+param5		30	30	30	30	30	30
+param6		-2	-2	-2	-2	-2	-2
+param7		-10	-10	-10	-10	-10	-10
+param8		1	1	1	1	1	1
