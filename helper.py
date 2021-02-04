@@ -362,14 +362,14 @@ class PyStimEpoch(PyStimRoutine):
             if self.x_width != 0:
                 isNotDivX = bool(np.mod(np.floor(proj_params['sizeX']),self.x_width))
                 if isNotDivX:
-                    raise ValueError(f"Stripe X width: {self.x_width} not divisible to screen X width {proj_params['sizeX']}.")
+                    raise ValueError(f"Stripe X width: {self.x_width} not divisible to screen X width {np.floor(proj_params['sizeX'])}.")
                 x_dim = int(proj_params['sizeX']/self.x_width)
             else:
                 x_dim = 1
             if self.y_width != 0: 
                 isNotDivY = bool(np.mod(np.floor(proj_params['sizeY']),self.y_width))
                 if isNotDivY:
-                    raise ValueError(f"Stripe Y width: {self.y_width} not divisible to screen Y width {proj_params['sizeY']}.")
+                    raise ValueError(f"Stripe Y width: {self.y_width} not divisible to screen Y width {np.floor(proj_params['sizeX'])}.")
                 y_dim = int(proj_params['sizeY']/self.y_width)
             else:
                 y_dim = 1
