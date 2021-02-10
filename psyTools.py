@@ -65,6 +65,7 @@ def setup_params(stim_fname):
     stim_size_Y = np.arctan((mon.getWidth()/2) / mon.getDistance())
     stim_size_Y = abs(np.degrees(stim_size_Y)) * 2
 
+    
     proj_params={
         "unit" : user_entry[6],
         "bit_depth" : float(user_entry[7]),
@@ -73,7 +74,7 @@ def setup_params(stim_fname):
         "sizeY" : stim_size_Y,
         "posX" : float(user_entry[4]),
         "posY" : float(user_entry[5]),
-        "win_width_pix" : mon.getSizePix()[0],
+        "win_width_pix" : mon.getSizePix()[0], # Pixel size from the monitor center
         "win_height_pix" : mon.getSizePix()[1],
         "onDLP" : int(user_entry[1]), # 1 is for DLP 0 is for PC monitors
         "monitorName" : mon.name,

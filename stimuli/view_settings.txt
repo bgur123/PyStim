@@ -1,5 +1,5 @@
 screen_refresh_rate	60
-stim_pos_x	140
+stim_pos_x	150
 stim_pos_y	240
 view_scale_x	1
 view_scale_y	0.5	

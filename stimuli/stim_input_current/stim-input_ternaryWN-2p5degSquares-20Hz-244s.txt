@@ -2,10 +2,10 @@ total_epoch_num	2
 randomization_condition	1	
 epoch_nums	1	2
 stim_type	fff-v1	whiteNoiseRectangles-v1
-param1	4	500
+param1	4	240
 param2	0.5	20
-param3		0
-param4		4
+param3		2.5
+param4		2.5
 param5		1
 param6		3
 param7		
