@@ -429,7 +429,7 @@ class PyStimEpoch(PyStimRoutine):
         # fg+bg = 2 * l                    
         contrast = self.michelson_contrast
         luminance = self.mean_luminance
-        fg = contrast * 2 * luminance
+        fg = contrast*luminance + luminance
         bg = 2*luminance - fg
         f = 1# generate a single cycle
 
