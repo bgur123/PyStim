@@ -65,7 +65,6 @@ def setup_params(stim_fname):
     stim_size_Y = np.arctan((mon.getWidth()/2) / mon.getDistance())
     stim_size_Y = abs(np.degrees(stim_size_Y)) * 2
 
-    
     proj_params={
         "unit" : user_entry[6],
         "bit_depth" : float(user_entry[7]),
