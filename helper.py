@@ -442,7 +442,8 @@ class PyStimEpoch(PyStimRoutine):
             # We need to scale and shift the wave to match the fg bg values
             # We also need to scale for bit depth since DLP has 6 bits
             oneD_wave = sine_signal * 2*(fg - bg) * bit_depth_scaler  # Scaling the signal
-            oneD_wave = oneD_wave -1 + bg 
+            oneD_wave = oneD_wave -1 + (bg * bit_depth_scaler)
+            
         else:
             raise ValueError("Grating type {s} doesn't exist".format(\
                 s=self.type))
