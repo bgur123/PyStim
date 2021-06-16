@@ -1,3 +1,4 @@
+#%%
 import os  # handy system and path functions
 import sys  # to get file system encoding
 import numpy as np # working with arrays and numbers
@@ -52,7 +53,7 @@ prev_time = 0
 # Generate a sequence of 1000 trials to have a sequence for all presentation which is faster.
 # Initialize stimuli
 trial_epoch_sequence = routine.generateTrialSeries(1000)
-routine.initializeEpochs(win,proj_params)
+routine.Epochs(win,proj_params)
 
 current_epoch_idx = -1
 
