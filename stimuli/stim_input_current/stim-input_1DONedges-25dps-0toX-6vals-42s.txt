@@ -1,0 +1,24 @@
+total_epoch_num	7						
+randomization_condition	1						
+epoch_nums	1	2	3	4	5	6	7
+stim_type	fff-v1	edges-v1	edges-v1	edges-v1	edges-v1	edges-v1	edges-v1
+param1	2	5	5	5	5	5	5
+param2	0	1	1	1	1	1	1
+param3		0	0	0	0	0	0
+param4		0.0625	0.125	0.25	0.5	0.75	1
+param5		25	25	25	25	25	25
+param6		90	90	90	90	90	90
+param7							
+param8							
+param9							
+param10							
+param11							
+param12							
+param13							
+param14							
+param15							
+param16							
+param17							
+param18							
+param19							
+param20							
