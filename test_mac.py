@@ -53,7 +53,7 @@ prev_time = 0
 # Generate a sequence of 1000 trials to have a sequence for all presentation which is faster.
 # Initialize stimuli
 trial_epoch_sequence = routine.generateTrialSeries(1000)
-routine.Epochs(win,proj_params)
+routine.initializeEpochs(win,proj_params)
 
 current_epoch_idx = -1
 
