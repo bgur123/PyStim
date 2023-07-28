@@ -1,0 +1,15 @@
+total_epoch_num	1
+randomization_condition	1
+epoch_nums	1
+stim_type	centered-gratings-v1
+param1	10
+param2	sin
+param3	5
+param4	5
+param5	90
+param6	1
+param7	0.5
+param8	10
+param9	0
+param10	0
+param11	0.5
