@@ -217,6 +217,44 @@ class PyStimEpoch(PyStimRoutine):
             grating.autoLog = False 
             self.grating = grating
 
+        elif self.stim_type == 'center-grat-with-circle-v1':
+            # Gratings that are centered in a defined position with a certain size and a circle in a defined position with a certain size
+            
+            # Background luminance
+            self.bg_lum_scaled = ((self.background_lum*2)* bit_depth_scaler -1) 
+            span = np.sqrt(proj_params['sizeY']**2+proj_params['sizeX']**2)
+            bg_rect = visual.Rect(
+                        win=win, name='rectangle', units=proj_params['unit'],
+                        size=span,lineWidth=0, 
+                        fillColor=self.bg_lum_scaled, fillColorSpace='rgb')
+            bg_rect.autoLog = False
+            self.bg_rect = bg_rect
+
+
+            # Circle
+            self.circle_lum_scaled = ((self.circle_luminance*2)* bit_depth_scaler -1) 
+            circle = visual.Circle(
+                        win=win, name='circle', units=proj_params['unit'],radius = self.circle_diam_deg/2,
+                        fillColor=self.circle_lum_scaled, fillColorSpace='rgb',pos=(self.circle_center_x,self.circle_center_y),
+                        lineColor = self.circle_lum_scaled)
+            circle.autoLog = False
+            self.circle = circle
+
+            # Grating
+            grating_texture = self.generateGratingTexture(bit_depth_scaler,dimension = 1024)
+            orientation = np.mod(self.direction_deg-90,360) # direction & orientation orthogonal
+
+            grating = visual.GratingStim(
+                win=win, name='grating',tex=grating_texture,mask='circle',
+                size=(self.diameter_deg, self.diameter_deg), ori = orientation,
+                sf=1/self.spatial_wavelength,pos=(self.x_center,self.y_center),
+                units=proj_params['unit'])
+
+            grating.autoLog = False 
+            self.grating = grating
+
+            
+
         elif self.stim_type == 'centered-circle-v1':
             # Circles that are centered in a defined position with a certain size
             

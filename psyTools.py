@@ -108,15 +108,21 @@ def update_stimulus(epochObj,screen_refresh_rate,win,epoch_clock,outputObj):
 
 def run_stimulus(epochObj,cur_time,screen_refresh_rate,win,outputObj):
     """ For drawing and updating the PsychoPy stimulus objects"""
-
-    
-    if epochObj.stim_type in ['gratings-v1', 'centered-gratings-v1']:
+    if epochObj.stim_type in ['gratings-v1', 'centered-gratings-v1','center-grat-with-circle-v1']:
        
         # Moving gratings
 
         if epochObj.stim_type == 'centered-gratings-v1':
             # Draw the background rectangle with the desired luminance
+              epochObj.bg_rect.draw()
+        if epochObj.stim_type == 'center-grat-with-circle-v1':
+            # Draw the desired circle and the background
             epochObj.bg_rect.draw()
+            epochObj.circle.draw()
+            
+            
+
+
         # We will need to advance the phase
         # according to the desired velocity and screen refresh rate
         #| v (degree/s) / refresh rate (update/s) |

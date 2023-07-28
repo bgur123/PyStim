@@ -1,0 +1,16 @@
+stim_type	center-grat-with-circle-v1	
+param1	total_dur_sec	float
+param2	type	str
+param3	spatial_wavelength	float
+param4	velocity	float
+param5	direction_deg	float
+param6	michelson_contrast	float
+param7	mean_luminance	float
+param8	diameter_deg	float
+param9	x_center	int
+param10	y_center	int
+param11	circle_diam_deg	float
+param12	circle_center_x	int
+param13	circle_center_y	int
+param14	circle_luminance	float
+param15	background_lum	float
