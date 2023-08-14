@@ -1,5 +1,5 @@
 total_epoch_num	1
-randomization_condition	1
+randomization_condition	0
 epoch_nums	1
 stim_type	centered-gratings-v1
 param1	10
