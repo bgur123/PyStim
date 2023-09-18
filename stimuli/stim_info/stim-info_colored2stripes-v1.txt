@@ -1,0 +1,13 @@
+stim_type	colored2stripes_v1	
+param1	total_dur_sec	float
+param2	background_lum	float
+param3	stripe1_color	str
+param4	stripe1_center_location	str
+param5	stripe1_height	float
+param6	stripe1_width	float
+param7	stripe1_orientation	float
+param8	stripe2_color	str
+param9	stripe2_center_location	str
+param10	stripe2_height	float
+param11	stripe2_width	float
+param12	stripe2_orientation	float

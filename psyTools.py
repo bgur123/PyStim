@@ -156,6 +156,21 @@ def run_stimulus(epochObj,cur_time,screen_refresh_rate,win,outputObj):
         outputObj.stim_info1.append(epochObj.stripe.pos)
         outputObj.stim_info2.append(0)
         outputObj.stim_info3.append(0) 
+
+    elif epochObj.stim_type == 'colored2stripes-v1':
+        # Moving stripes
+
+        # Draw the background rectangle with the desired luminance
+        epochObj.bg_rect.draw()
+
+        # Draw stripes
+        epochObj.stripe1.draw()
+        epochObj.stripe2.draw()
+        win.flip()
+        
+        outputObj.stim_info1.append(epochObj.stripe1.pos)
+        outputObj.stim_info2.append(epochObj.stripe2.pos)
+        outputObj.stim_info3.append(0) 
         
     elif epochObj.stim_type == 'edges-v1':
         # Moving edges

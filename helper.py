@@ -166,6 +166,7 @@ class PyStimEpoch(PyStimRoutine):
                         str(params[info_param])
                     self.__dict__[epoch_info[info_param][0]] =\
                         str(params[info_param])
+    
                 else:
                     errormsg = '{s} {p} type not defined correctly.'.format(s=self.stim_type,p=info_param)
                     raise ValueError(errormsg)
@@ -455,8 +456,54 @@ class PyStimEpoch(PyStimRoutine):
             test_stim.autoLog = False 
 
             self.test_stim = test_stim
+
+        elif self.stim_type == 'colored2stripes-v1':
+            # Two standing stripes with color
+
+            self.win_lum = ((self.background_lum*2)* bit_depth_scaler -1) # Gray (both colors)
+            
+            # Background is defined by a rectangle that spans whole screen (and also the cut parts)
+            span = np.sqrt(proj_params['sizeY']**2+proj_params['sizeX']**2)
+            bg_rect = visual.Rect(
+                        win=win, name='rectangle', units=proj_params['unit'],
+                        size=span,lineWidth=0, 
+                        fillColor=self.win_lum, fillColorSpace='rgb')
+            bg_rect.autoLog = False
+            self.bg_rect = bg_rect
+
+
+            # Stripe 1
+            stripe1_c = np.array([int(num) for num in self.stripe1_color.split(' ')])
+            stripe1_c = ((stripe1_c*2)* bit_depth_scaler -1) 
+
+            
+            stripe1_pos = tuple([int(num) for num in self.stripe1_center_location.split(' ')]) 
+            stripe1 = visual.Rect(
+                        win=win, name='stripe', units=proj_params['unit'],
+                        width=self.stripe1_width, height=self.stripe1_height, pos = stripe1_pos,
+                        ori=self.stripe1_orientation,lineWidth=0, 
+                        fillColor=stripe1_c, fillColorSpace='rgb')
+            stripe1.autoLog = False
+            self.stripe1 = stripe1
+
+
+            # Stripe 2
+            stripe2_c = np.array([int(num) for num in self.stripe2_color.split(' ')])
+            stripe2_c = ((stripe2_c*2)* bit_depth_scaler -1) 
+
+            stripe2_pos = tuple([int(num) for num in self.stripe2_center_location.split(' ')]) 
+            stripe2 = visual.Rect(
+                        win=win, name='stripe', units=proj_params['unit'],
+                        width=self.stripe2_width, height=self.stripe2_height, pos = stripe2_pos,
+                        ori=self.stripe2_orientation,lineWidth=0, 
+                        fillColor=stripe2_c, fillColorSpace='rgb')
+            stripe2.autoLog = False
+            self.stripe2 = stripe2
+
         else:
             raise NameError(f"Stimulus type {self.stim_type} could not be initialized.")
+        
+        
     
     def generateGratingTexture(self, bit_depth_scaler,dimension = 1024):
         # Moving gratings
@@ -626,3 +673,5 @@ class OutputInfo(object):
 
 
 
+
+# %%
